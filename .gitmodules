@@ -1,0 +1,7 @@
+[submodule "amanzi"]
+	path = amanzi
+	url = git@github.com:amanzi/amanzi
+[submodule "e3sm-fy"]
+	path = E3SM
+	url = git@github.com:fmyuan/E3SM
+	branch = EMI-ats
