@@ -6,12 +6,12 @@ MPI_DISTRO=mpich
 MPI_VERSION=4.0.3  # ignored if build_mpi = False
 BUILD_MPI=True
 
-PETSC_VER=3.16
-TRILINOS_VER=14-2-fc55b9cd
+PETSC_VER=3.20
+TRILINOS_VER=15-1-6af5f44
 
 AMANZI_BRANCH=master
-AMANZI_SOURCE_DIR=/ascem/amanzi/repos/amanzi-master
-AMANZI_TPLS_VER=0.98.7
+AMANZI_SOURCE_DIR=~/repos/COMPASS-ELM-ATS/amanzi
+AMANZI_TPLS_VER=0.98.9
 
 LANL_PROXY="--build-arg http_proxy=proxyout.lanl.gov:8080 --build-arg https_proxy=proxyout.lanl.gov:8080"
 

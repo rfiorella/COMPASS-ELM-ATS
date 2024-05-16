@@ -1,0 +1,150 @@
+# builds ATS, failing if tests do not pass
+#
+# Note this should not be
+# used in CI -- it is more for creating containers for short courses,
+# etc, where the container is manually pushed, as opposed to CI which
+# first pushes the container and then runs tests.
+#
+# Note, the branch arguments are:
+# - if a branch name is passed, it will be checked out and forced to the
+#   tip of that branch on origin
+# - if the branch name is empty, the default submodule hash will be used
+#
+# The former is preferred in development, but the latter should be
+# done to confirm that the submodule will work for users
+
+ARG amanzi_tpls_ver=latest
+ARG mpi_flavor=mpich
+ARG amanzi_branch=master
+ARG ats_branch=
+ARG ats_tests_branch=
+ARG https_proxy=
+ARG http_proxy=
+
+FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} as tpls
+LABEL Description="ATS CI: Build ATS in a Docker image."
+
+
+
+# Switch to amanzi_user and set up env
+USER amanzi_user
+ENV https_proxy=$https_proxy \
+    http_proxy=$http_proxy
+
+RUN echo "${AMANZI_PREFIX}"
+RUN echo "${AMANZI_TPLS_DIR}"
+
+# Change the Working Directory and update amanzi
+WORKDIR /home/amanzi_user/amanzi
+
+# Make sure we have updated branch information
+RUN echo "Amanzi branch = $amanzi_branch"
+RUN git remote prune origin
+RUN git fetch
+
+# Checkout the local branch and forcibly move it to the origin's
+# version of that branch.  Do not git pull because that can author
+# commits (and therefore fail) if a merge is required to do the pull
+# (if the local branch already exists and diverges from the remote
+# branch)
+RUN if [[ -n "$amanzi_branch" ]] ; then git checkout $amanzi_branch; git reset --hard origin/$amanzi_branch; fi
+RUN git rev-parse --short HEAD
+
+# Checkout ATS at the right branch
+RUN git submodule update --init
+WORKDIR /home/amanzi_user/amanzi/src/physics/ats
+RUN if [[ -n "$ats_branch" ]] ; then git fetch; git checkout $ats_branch; git reset --hard origin/$ats_branch; fi
+RUN git rev-parse --short HEAD
+
+# Checkout ats-regression-tests at the right branch
+RUN git submodule update --init
+WORKDIR /home/amanzi_user/amanzi/src/physics/ats/testing/ats-regression-tests
+RUN if [[ -n "$ats_tests_branch" ]] ; then git fetch; git checkout $ats_tests_branch; git reset --hard origin/$ats_tests_branch; fi
+RUN git rev-parse --short HEAD
+WORKDIR /home/amanzi_user/amanzi
+
+ENV AMANZI_SRC_DIR=/home/amanzi_user/amanzi \
+    ATS_SRC_DIR=/home/amanzi_user/amanzi/src/physics/ats
+
+FROM tpls as build-ats
+
+RUN ./bootstrap.sh --prefix=${AMANZI_PREFIX} \
+   --amanzi-build-dir=/home/amanzi_user/amanzi_builddir/ats \
+   --tpl-config-file=${AMANZI_TPLS_DIR}/share/cmake/amanzi-tpl-config.cmake \
+   --parallel=4 \
+   --opt \
+   --with-mpi=/usr \
+   --enable-shared \
+   --disable-structured \
+   --disable-build_user_guide \
+   --disable-geochemistry \
+   --disable-amanzi_physics \
+   --enable-ats_physics \
+   --ats_dev \
+   --enable-reg_tests \
+   --enable-test_suite
+
+# Set path to make it easier to run amanzi
+ENV PATH=/home/amanzi_user/install/bin:${PATH}
+RUN echo $PATH
+
+# Create mount point for work on the host
+RUN mkdir /home/amanzi_user/work \
+    && mkdir /home/amanzi_user/.cime
+
+# Unset proxy
+ENV https_proxy= \
+    http_proxy=
+
+FROM build-ats as build-e3sm
+# Copy E3SM into container
+ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
+COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
+ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
+
+# need a version of python 8 currently for this version of cime
+USER root
+RUN apt-get -q update -y && apt-get install -y \
+    libxml2 \
+    libxml2-dev \
+    libxml2-utils \
+    libxml-libxml-perl \
+    subversion \
+    csh \
+    && apt-get clean all \
+    && mv /bin/sh /bin/sh.orig \
+    && ln -s /bin/bash /bin/sh \
+    && wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz \
+    && tar xvf Python-3.8.18.tgz \
+    && cd Python-3.8.18 \
+    && ./configure && make && make install \
+    && cd ../ && rm -r Python-3.8.18* \
+    && ln -fs /opt/Python-3.8.18/Python /usr/bin/python \
+    # need to make each of these directories explicitly because RUN uses
+    # /bin/sh and so brace expansion is not available:
+    && cd /home/amanzi_user \
+    && mkdir -p work/inputdata \
+    && mkdir -p work/cases \
+    && mkdir -p work/output \
+    && chown -R amanzi_user:amanzi_user work
+
+USER amanzi_user
+
+ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
+    USER=amanzi_user \
+    CIMEROOT=/home/amanzi_user/E3SM/cime \
+    PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
+    CIME_MODEL=e3sm \
+    ATS_DIR=/home/amanzi_user/install/
+
+ RUN cd /home/amanzi_user/E3SM/cime/scripts \
+     && ./create_newcase --case ${CASE_NAME} --res f19_g16 --compset IGSWELMBGC --mach docker-ats --compiler gnu \
+     && cd ${CASE_NAME} \
+     && ./xmlchange DATM_CLMNCEP_YR_END=1995 \
+     && ./xmlchange PIO_TYPENAME=netcdf \
+     && ./xmlchange RUNDIR=${PWD}/run \
+     && ./xmlchange EXEROOT=${PWD}/bld \
+     && ./xmlchange NTASKS=1 \
+     && ./xmlchange DIN_LOC_ROOT=$PWD \
+     && ./case.setup
+#      && ./case.build
