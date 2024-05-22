@@ -107,7 +107,7 @@ RUN groupadd -r amanzi_user \
   && useradd -r -K UMASK=0022 -K HOME_MODE=0755 -m -g amanzi_user amanzi_user
 USER amanzi_user
 
-ADD --chown="amanzi_user:amanzi_user" amanzi/ /home/amanzi_user/amanzi
+COPY --chown="amanzi_user:amanzi_user" amanzi/ /home/amanzi_user/amanzi
 
 # Set the current working directory as the users home directory
 # (creates teh directory if it doesn't exist)
