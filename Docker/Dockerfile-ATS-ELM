@@ -21,7 +21,7 @@ ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
 
-FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} as tpls
+FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} AS tpls
 LABEL Description="ATS CI: Build ATS in a Docker image."
 
 
@@ -66,7 +66,7 @@ WORKDIR /home/amanzi_user/amanzi
 ENV AMANZI_SRC_DIR=/home/amanzi_user/amanzi \
     ATS_SRC_DIR=/home/amanzi_user/amanzi/src/physics/ats
 
-FROM tpls as build-ats
+FROM tpls AS build-ats
 
 RUN ./bootstrap.sh --prefix=${AMANZI_PREFIX} \
    --amanzi-build-dir=/home/amanzi_user/amanzi_builddir/ats \
@@ -96,7 +96,7 @@ RUN mkdir /home/amanzi_user/work \
 ENV https_proxy= \
     http_proxy=
 
-FROM build-ats as build-e3sm
+FROM build-ats AS build-e3sm
 # Copy E3SM into container
 ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
@@ -114,12 +114,6 @@ RUN apt-get -q update -y && apt-get install -y \
     && apt-get clean all \
     && mv /bin/sh /bin/sh.orig \
     && ln -s /bin/bash /bin/sh \
-    && wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz \
-    && tar xvf Python-3.8.18.tgz \
-    && cd Python-3.8.18 \
-    && ./configure && make && make install \
-    && cd ../ && rm -r Python-3.8.18* \
-    && ln -fs /opt/Python-3.8.18/Python /usr/bin/python \
     # need to make each of these directories explicitly because RUN uses
     # /bin/sh and so brace expansion is not available:
     && cd /home/amanzi_user \
