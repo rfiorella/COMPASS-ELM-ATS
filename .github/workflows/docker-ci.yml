@@ -26,4 +26,4 @@ jobs:
         run: |
           docker build \
             --file Docker/Dockerfile-ATS-ELM \
-            --tag ${{ secrets.DOCKER_USERNAME }}/compass-elm-ats:latest .
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
