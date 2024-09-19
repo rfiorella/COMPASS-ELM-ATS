@@ -16,7 +16,7 @@ get_tpl_version()
 }
 
 AMANZI_BRANCH=master
-AMANZI_SOURCE_DIR=~/repos/COMPASS-ELM-ATS/amanzi
+AMANZI_SOURCE_DIR=/code/E3SM/COMPASS-ELM-ATS/amanzi
 AMANZI_TPLS_VER=`get_tpl_version`
 
 ATS_SOURCE_DIR=$AMANZI_SOURCE_DIR/src/physics/ats
@@ -49,14 +49,14 @@ echo ""
 # MPI_FLAVOR=openmpi
 MPI_FLAVOR=mpich
 
-docker build --build-arg ats_branch=rfiorella/elm_api \
-	--build-arg ats_tests_branch=ats-regression-tests-1.4 \
+docker build --build-arg ats_branch=master \
+	--build-arg ats_tests_branch=master \
 	--build-arg amanzi_branch=${AMANZI_BRANCH} \
 	--build-arg amanzi_tpls_ver=${AMANZI_TPLS_VER} \
 	--build-arg mpi_flavor=${MPI_FLAVOR} \
 	--progress=plain \
         --no-cache \
 	-f Dockerfile-ATS-ELM \
-	-t metsi/ats:rfiorella-elm_api-1.4-amd64 ../
+	-t metsi/ats:elm_api ../
 
 
