@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build Docker Image
 
 on:
   push:
@@ -16,10 +16,12 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: Extract the branch name
         id: branch
+        working-directory: amanzi
         run:
           echo "AMANZI_BRANCH=$GITHUB_REF_NAME" >> $GITHUB_ENV
       - name: Filter the branch name to generate a tag for Docker
         id: tag
+        working-directory: amanzi
         run:
           echo "AMANZI_BRANCH_TAG=$(echo ${{env.AMANZI_BRANCH}} | sed -e 's/\//--/g')" >> $GITHUB_ENV
       - name: Output the branch name
