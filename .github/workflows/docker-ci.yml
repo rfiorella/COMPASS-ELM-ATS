@@ -27,7 +27,7 @@ jobs:
           echo "Amanzi Branch = ${{env.AMANZI_BRANCH}}"
       - name: Get TPLs version
         id: version
-        working-directory: Docker
+        working-directory: amanzi/Docker
         run:
           echo "AMANZI_TPLS_VER=$(./amanzi/get_tpls_version.sh)" >> $GITHUB_ENV
       - name: Output the TPLs version
