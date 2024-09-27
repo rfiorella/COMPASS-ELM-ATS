@@ -17,21 +17,19 @@ jobs:
       - name: Extract the branch name
         id: branch
         working-directory: amanzi
-        run:
-          echo "AMANZI_BRANCH=$GITHUB_REF_NAME" >> $GITHUB_ENV
+        run: |
+          AMANZI_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "AMANZI_BRANCH=$AMANZI_BRANCH" >> $GITHUB_ENV
       - name: Filter the branch name to generate a tag for Docker
         id: tag
-        working-directory: amanzi
         run:
           echo "AMANZI_BRANCH_TAG=$(echo ${{env.AMANZI_BRANCH}} | sed -e 's/\//--/g')" >> $GITHUB_ENV
-      - name: Output the branch name
-        run:
-          echo "Amanzi Branch = ${{env.AMANZI_BRANCH}}"
       - name: Get TPLs version
         id: version
         working-directory: amanzi/Docker
-        run:
-          echo "AMANZI_TPLS_VER=$(./amanzi/get_tpls_version.sh)" >> $GITHUB_ENV
+        run: |
+          ls *
+          echo "AMANZI_TPLS_VER=$(./get_tpls_version.sh)" >> $GITHUB_ENV
       - name: Output the TPLs version
         run:
           echo "TPLs version = ${{env.AMANZI_TPLS_VER}}"
