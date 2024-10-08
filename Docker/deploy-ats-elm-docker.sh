@@ -16,7 +16,7 @@ get_tpl_version()
 }
 
 AMANZI_BRANCH=master
-AMANZI_SOURCE_DIR=/code/E3SM/COMPASS-ELM-ATS/amanzi
+AMANZI_SOURCE_DIR=/code/COMPASS-ELM-ATS/amanzi
 AMANZI_TPLS_VER=`get_tpl_version`
 
 ATS_SOURCE_DIR=$AMANZI_SOURCE_DIR/src/physics/ats

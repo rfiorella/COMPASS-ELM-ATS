@@ -16,7 +16,7 @@
 ARG amanzi_tpls_ver=latest
 ARG mpi_flavor=mpich
 ARG amanzi_branch=master
-ARG ats_branch=
+ARG ats_branch=master
 ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
