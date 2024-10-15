@@ -47,7 +47,7 @@ RUN git fetch
 # commits (and therefore fail) if a merge is required to do the pull
 # (if the local branch already exists and diverges from the remote
 # branch)
-RUN if [ -n "${amanzi_branch}" ] ; then git checkout ${amanzi_branch}; git reset --hard origin/${amanzi_branch}; fi
+RUN echo ${amanzi_branch} && if [ -n "${amanzi_branch}" ] ; then git checkout ${amanzi_branch}; git reset --hard origin/${amanzi_branch}; fi
 RUN git rev-parse --short HEAD
 
 # Checkout ATS at the right branch
