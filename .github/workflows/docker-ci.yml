@@ -41,8 +41,8 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg amanzi_branch=${{env.AMANZI_BRANCH}} \
+            --build-arg amanzi_branch=master \
             --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} \
-            --build-arg ats_branch=${{env.ATS_BRANCH}} \
+            --build-arg ats_branch=master \
             --file Docker/Dockerfile-ATS-ELM \
             --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
