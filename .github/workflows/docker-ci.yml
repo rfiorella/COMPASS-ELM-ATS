@@ -3,8 +3,7 @@ name: Build Docker Image
 on:
   push:
     branches:
-      - main  # Change this if you want a different branch
-
+      - **
 jobs:
   build:
     runs-on: ubuntu-latest
