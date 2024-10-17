@@ -15,16 +15,14 @@
 
 ARG amanzi_tpls_ver=latest
 ARG mpi_flavor=mpich
-ARG amanzi_branch=master
-ARG ats_branch=master
+ARG amanzi_branch=
+ARG ats_branch=
 ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
 
 FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} AS tpls
 LABEL Description="ATS CI: Build ATS in a Docker image."
-
-
 
 # Switch to amanzi_user and set up env
 USER amanzi_user
@@ -38,17 +36,19 @@ RUN echo "${AMANZI_TPLS_DIR}"
 WORKDIR /home/amanzi_user/amanzi
 
 # Make sure we have updated branch information
-RUN echo "Amanzi branch = ${amanzi_branch}"
-RUN git remote prune origin
-RUN git fetch
-
 # Checkout the local branch and forcibly move it to the origin's
 # version of that branch.  Do not git pull because that can author
 # commits (and therefore fail) if a merge is required to do the pull
 # (if the local branch already exists and diverges from the remote
 # branch)
-RUN echo ${amanzi_branch} && if [ -n "${amanzi_branch}" ] ; then git checkout ${amanzi_branch}; git reset --hard origin/${amanzi_branch}; fi
-RUN git rev-parse --short HEAD
+RUN git fetch \
+    && git remote prune origin \
+    && echo "Amanzi branch = ${amanzi_branch}" \
+    && if [ -n "${amanzi_branch}" ] ; then git checkout ${amanzi_branch} \
+    && git reset --hard origin/${amanzi_branch}; \
+    fi \
+    && git rev-parse --short HEAD
+
 
 # Checkout ATS at the right branch
 RUN git submodule update --init
