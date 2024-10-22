@@ -38,4 +38,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build Docker image
-        run: docker build --build-arg amanzi_branch=master --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch=master --file Docker/Dockerfile-ATS-ELM --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
+        run: docker build --build-arg amanzi_branch='master' --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch='master' --file Docker/Dockerfile-ATS-ELM --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
