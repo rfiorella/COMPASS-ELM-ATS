@@ -15,14 +15,16 @@
 
 ARG amanzi_tpls_ver=latest
 ARG mpi_flavor=mpich
+
+
+FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} AS tpls
+LABEL Description="ATS CI: Build ATS in a Docker image."
+
 ARG amanzi_branch=
 ARG ats_branch=
 ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
-
-FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} AS tpls
-LABEL Description="ATS CI: Build ATS in a Docker image."
 
 # Switch to amanzi_user and set up env
 USER amanzi_user
