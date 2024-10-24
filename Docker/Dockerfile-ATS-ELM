@@ -140,5 +140,5 @@ RUN cd /home/amanzi_user/E3SM/cime/scripts \
      && ./xmlchange EXEROOT=${PWD}/bld \
      && ./xmlchange NTASKS=1 \
      && ./xmlchange DIN_LOC_ROOT=$PWD \
-     && ./case.setup
-#     && ./case.build
+     && ./case.setup \
+     && ./case.build
