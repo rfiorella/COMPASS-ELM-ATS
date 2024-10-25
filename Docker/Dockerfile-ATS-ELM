@@ -88,8 +88,11 @@ ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
 
 # Create mount point for work on the host
+USER root
 RUN mkdir /home/amanzi_user/work \
-    && mkdir /home/amanzi_user/.cime
+    && mkdir /home/amanzi_user/.cime \
+    && mkdir /.cime
+USER amanzi_user
 
 # Unset proxy
 ENV https_proxy= \
@@ -99,6 +102,7 @@ FROM build-ats AS build-e3sm
 # Copy E3SM into container
 ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
+COPY --chown="amanzi_user:amanzi_user" cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
 
 # need a version of python 8 currently for this version of cime
@@ -140,4 +144,6 @@ RUN cd /home/amanzi_user/E3SM/cime/scripts \
      && ./xmlchange NTASKS=1 \
      && ./xmlchange DIN_LOC_ROOT=$PWD \
      && ./case.setup \
-     && ./case.build || tail -n 100 ${CASE_NAME}/bld/*.bldlog.*
+     && ./case.build || tail -n 100 ${CASE_NAME}/bld/*.bldlog.* \
+     && ./xmlchange STOP_N=5,STOP_OPTION=ndays \
+     && ./case.submit
