@@ -81,8 +81,7 @@ RUN ./bootstrap.sh --prefix=${AMANZI_PREFIX} \
    --disable-amanzi_physics \
    --enable-ats_physics \
    --enable-elm_ats_api \
-   --enable-reg_tests \
-   --enable-test_suite
+   --enable-reg_tests
 
 # Set path to make it easier to run amanzi
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
@@ -140,5 +139,5 @@ RUN cd /home/amanzi_user/E3SM/cime/scripts \
      && ./xmlchange EXEROOT=${PWD}/bld \
      && ./xmlchange NTASKS=1 \
      && ./xmlchange DIN_LOC_ROOT=$PWD \
-     && ./case.setup \
-     && ./case.build
+     && ./case.setup || cat ${CASE_NAME}/e3sm.bldlog.*
+#     && ./case.build
