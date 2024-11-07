@@ -11,7 +11,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          name: amanzi/amanzi
           token: ${{ secrets.GHA_PAT }}
       - name: Extract the branch name
         id: branch
