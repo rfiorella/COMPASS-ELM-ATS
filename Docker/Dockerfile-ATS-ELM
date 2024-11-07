@@ -1,98 +1,24 @@
-# builds ATS, failing if tests do not pass
-#
-# Note this should not be
-# used in CI -- it is more for creating containers for short courses,
-# etc, where the container is manually pushed, as opposed to CI which
-# first pushes the container and then runs tests.
-#
-# Note, the branch arguments are:
-# - if a branch name is passed, it will be checked out and forced to the
-#   tip of that branch on origin
-# - if the branch name is empty, the default submodule hash will be used
-#
-# The former is preferred in development, but the latter should be
-# done to confirm that the submodule will work for users
+# adds E3SM to container with ATS already compiled,
+# provides backbone for e3sm testing
+
+#FROM metsi/ats:rfiorella--ats-elm-latest
+FROM metsi/ats:master-latest
 
 ARG amanzi_tpls_ver=latest
 ARG mpi_flavor=mpich
-
-FROM metsi/amanzi-tpls:${amanzi_tpls_ver}-${mpi_flavor} AS tpls
-LABEL Description="ATS CI: Build ATS in a Docker image."
-
-ARG amanzi_branch=
+ARG amanzi_branch=master
 ARG ats_branch=
 ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
-
-# Switch to amanzi_user and set up env
-USER amanzi_user
-ENV https_proxy=$https_proxy \
-    http_proxy=$http_proxy
-
-RUN echo "${AMANZI_PREFIX}"
-RUN echo "${AMANZI_TPLS_DIR}"
-
-# Change the Working Directory and update amanzi
-WORKDIR /home/amanzi_user/amanzi
-
-# Make sure we have updated branch information
-# Checkout the local branch and forcibly move it to the origin's
-# version of that branch.  Do not git pull because that can author
-# commits (and therefore fail) if a merge is required to do the pull
-# (if the local branch already exists and diverges from the remote
-# branch)
-RUN git fetch \
-    && git remote prune origin \
-    && echo "Amanzi branch = $amanzi_branch" \
-    && if [ -n "$amanzi_branch" ] ; then git checkout $amanzi_branch \
-    && git reset --hard origin/$amanzi_branch; \
-    fi \
-    && git rev-parse --short HEAD
-
-# Checkout ATS at the right branch
-RUN git submodule update --init
-WORKDIR /home/amanzi_user/amanzi/src/physics/ats
-RUN echo "ATS Branch = $ats_branch"; if [ -n "$ats_branch" ] ; then git fetch; git checkout $ats_branch; git reset --hard origin/$ats_branch; fi
-RUN git rev-parse --short HEAD
-
-# Checkout ats-regression-tests at the right branch
-RUN git submodule update --init
-WORKDIR /home/amanzi_user/amanzi/src/physics/ats/testing/ats-regression-tests
-RUN if [ -n "$ats_tests_branch" ] ; then git fetch; git checkout $ats_tests_branch; git reset --hard origin/$ats_tests_branch; fi
-RUN git rev-parse --short HEAD
-WORKDIR /home/amanzi_user/amanzi
-
-ENV AMANZI_SRC_DIR=/home/amanzi_user/amanzi \
-    ATS_SRC_DIR=/home/amanzi_user/amanzi/src/physics/ats
-
-FROM tpls AS build-ats
-
-RUN ./bootstrap.sh --prefix=${AMANZI_PREFIX} \
-   --amanzi-build-dir=/home/amanzi_user/amanzi_builddir/ats \
-   --tpl-config-file=${AMANZI_TPLS_DIR}/share/cmake/amanzi-tpl-config.cmake \
-   --parallel=4 \
-   --opt \
-   --with-mpi=/usr \
-   --enable-shared \
-   --disable-structured \
-   --disable-build_user_guide \
-   --enable-geochemistry \
-   --disable-amanzi_physics \
-   --enable-ats_physics \
-   --enable-elm_ats_api \
-   --enable-reg_tests
 
 # Set path to make it easier to run amanzi
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
 
 # Create mount point for work on the host
-USER root
 RUN mkdir /home/amanzi_user/work \
-    && mkdir /home/amanzi_user/.cime \
-    && mkdir /.cime
-USER amanzi_user
+    && mkdir /home/amanzi_user/.cime
 
 # Unset proxy
 ENV https_proxy= \
@@ -102,7 +28,6 @@ FROM build-ats AS build-e3sm
 # Copy E3SM into container
 ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
-COPY --chown="amanzi_user:amanzi_user" cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
 
 # need a version of python 8 currently for this version of cime
@@ -134,7 +59,7 @@ USER amanzi_user
 #     CIME_MODEL=e3sm \
 #     ATS_DIR=/home/amanzi_user/install/
 
-# RUN cd /home/amanzi_user/E3SM/cime/scripts \
+#  RUN cd /home/amanzi_user/E3SM/cime/scripts \
 #      && ./create_newcase --case ${CASE_NAME} --res f19_g16 --compset IGSWELMBGC --mach docker-ats --compiler gnu \
 #      && cd ${CASE_NAME} \
 #      && ./xmlchange DATM_CLMNCEP_YR_END=1995 \
@@ -143,7 +68,5 @@ USER amanzi_user
 #      && ./xmlchange EXEROOT=${PWD}/bld \
 #      && ./xmlchange NTASKS=1 \
 #      && ./xmlchange DIN_LOC_ROOT=$PWD \
-#      && ./case.setup \
-#      && ./case.build || tail -n 100 ${CASE_NAME}/bld/*.bldlog.* \
-#      && ./xmlchange STOP_N=5,STOP_OPTION=ndays \
-#      && ./case.submit
+#      && ./case.setup
+# #      && ./case.build
