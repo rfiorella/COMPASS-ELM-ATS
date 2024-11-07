@@ -47,7 +47,7 @@ jobs:
     name: Run ELM test
     runs-on: ubuntu-latest
     container:
-      image: metsi/compass-elm-ats-master:latest
+      image: metsi/compass-elm-ats:latest
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }} 
