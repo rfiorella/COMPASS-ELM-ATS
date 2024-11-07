@@ -41,13 +41,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build Docker image
-        run: docker build --build-arg amanzi_branch='master' --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch='master' --file Docker/Dockerfile-ATS-ELM-alt --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
+        run: docker build --push --build-arg amanzi_branch='master' --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch='master' --file Docker/Dockerfile-ATS-ELM-alt --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
   test:
     needs: build
     name: Run ELM test
     runs-on: ubuntu-latest
     container:
-      image: metsi/ats-master:latest
+      image: metsi/compass-elm-ats-master:latest
     steps: 
       - name: setup input datafiles
         run: |
