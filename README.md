@@ -5,7 +5,7 @@
 ELM-ATS should build from the head of ATS master branch, and against
 the E3SM commit in the linked submodule. To build the stack:
 
-1) `git clone --recurse-submodules git@github.com:amanzi/COMPASS-ELM-ATS`
+1) `git clone --recurse-submodules -b rfiorella/initial-ci git@github.com:amanzi/COMPASS-ELM-ATS`
 2) If building locally, need copy of Amanzi-ATS repo
 3) Build TPLS as normal
 4) Build ATS using `--enable-elm_api` in bootstrap
