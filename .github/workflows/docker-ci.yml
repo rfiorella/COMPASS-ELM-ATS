@@ -48,6 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: metsi/compass-elm-ats-master:latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }} 
     steps: 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
