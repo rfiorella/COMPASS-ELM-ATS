@@ -1,14 +1,9 @@
 # adds E3SM to container with ATS already compiled,
 # provides backbone for e3sm testing
 
-#FROM metsi/ats:rfiorella--ats-elm-latest
-FROM metsi/ats:master-latest
+FROM metsi/ats:rfiorella--ats-elm-latest
+#FROM metsi/ats:master-latest
 
-ARG amanzi_tpls_ver=latest
-ARG mpi_flavor=mpich
-ARG amanzi_branch=master
-ARG ats_branch=
-ARG ats_tests_branch=
 ARG https_proxy=
 ARG http_proxy=
 
@@ -16,15 +11,13 @@ ARG http_proxy=
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
 
-# Create mount point for work on the host
-RUN mkdir /home/amanzi_user/work \
-    && mkdir /home/amanzi_user/.cime
+# Add cime directory
+RUN mkdir /home/amanzi_user/.cime
 
 # Unset proxy
 ENV https_proxy= \
     http_proxy=
 
-FROM build-ats AS build-e3sm
 # Copy E3SM into container
 ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
