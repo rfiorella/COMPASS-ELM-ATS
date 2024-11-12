@@ -51,7 +51,9 @@ ENV USER=amanzi_user \
     CIMEROOT=home/amanzi_user/E3SM/cime \
     PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
     CIME_MODEL=e3sm \
-    ATS_DIR=/home/amanzi_user/install/
+    ATS_DIR=/home/amanzi_user/install/ \
+    NETCDF_PATH=/home/amanzi_user/install/tpls \
+    HDF5_PATH=/home/amanzi_user/install/tpls
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
 
