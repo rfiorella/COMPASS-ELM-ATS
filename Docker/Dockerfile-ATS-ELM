@@ -46,7 +46,7 @@ RUN apt-get -q update -y && apt-get install -y \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
 
-USER amanzi_user
+#USER amanzi_user
 ENV USER=amanzi_user \
     CIMEROOT=home/amanzi_user/E3SM/cime \
     PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
