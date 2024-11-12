@@ -62,7 +62,7 @@ jobs:
           tar -zxvf clmforc.Li_2012_climo1995-2011.T62.lnfm_Total_c140423.nc.tar.gz
       - name: run test case
         run: |
-          cd E3SM/cime/scripts && ./create_newcase --mach docker-ats --res ELM_USRDAT --compset ICB1850CNPRDCTCBC --case ~/output/ci_test \
+          cd /home/amanzi_user/E3SM/cime/scripts && ./create_newcase --mach docker-ats --res ELM_USRDAT --compset ICB1850CNPRDCTCBC --case ~/work/output/ci_test \
           && cd ~/work/output/ci_test
           ./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=/home/amanzi_user/inputdata
           ./xmlchange DIN_LOC_ROOT_CLMFORC=/home/amanzi_user/inputdata/atm/datm7
