@@ -10,9 +10,11 @@ ARG http_proxy=
 # Set path to make it easier to run amanzi
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
+USER root
 
 # Add cime directory
-RUN mkdir /home/amanzi_user/.cime
+RUN mkdir /home/amanzi_user/.cime \
+    && mkdir /.cime/
 
 # Unset proxy
 ENV https_proxy= \
@@ -21,10 +23,11 @@ ENV https_proxy= \
 # Copy E3SM into container
 ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
+COPY cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
 
 # need a version of python 8 currently for this version of cime
-USER root
+
 RUN apt-get -q update -y && apt-get install -y \
     libxml2 \
     libxml2-dev \
@@ -44,13 +47,13 @@ RUN apt-get -q update -y && apt-get install -y \
     && chown -R amanzi_user:amanzi_user work
 
 USER amanzi_user
+ENV USER=amanzi_user \
+    CIMEROOT=home/amanzi_user/E3SM/cime \
+    PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
+    CIME_MODEL=e3sm \
+    ATS_DIR=/home/amanzi_user/install/
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
-#     USER=amanzi_user \
-#     CIMEROOT=/home/amanzi_user/E3SM/cime \
-#     PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
-#     CIME_MODEL=e3sm \
-#     ATS_DIR=/home/amanzi_user/install/
 
 #  RUN cd /home/amanzi_user/E3SM/cime/scripts \
 #      && ./create_newcase --case ${CASE_NAME} --res f19_g16 --compset IGSWELMBGC --mach docker-ats --compiler gnu \
