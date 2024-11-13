@@ -52,9 +52,9 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }} 
     steps: 
-      - name: cime workaround for GHA runners, and setup input datafiles
+      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
         run: |
-          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
+          echo HOME=/root >> "$GITHUB_ENV"
           git clone https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
           cd /home/amanzi_user/inputdata/lnd/clm2/firedata
           tar -zxvf clmforc.Li_2012_hdm_0.5x0.5_AVHRR_simyr1850-2010_c130401.nc.tar.gz
