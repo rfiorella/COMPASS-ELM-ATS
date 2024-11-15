@@ -55,6 +55,7 @@ ENV USER=amanzi_user \
     NETCDF_PATH=/home/amanzi_user/install/tpls \
     HDF5_HOME=/home/amanzi_user/install/tpls \
     HDF5_PATH=/home/amanzi_user/install/tpls 
+WORKDIR /home/amanzi_user
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
 
