@@ -1,7 +1,7 @@
 # adds E3SM to container with ATS already compiled,
 # provides backbone for e3sm testing
 
-FROM metsi/ats:rfiorella--ats-elm-latest
+FROM metsi/ats:compass-ats-base
 #FROM metsi/ats:master-latest
 
 ARG https_proxy=
