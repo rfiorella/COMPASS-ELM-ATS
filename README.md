@@ -8,7 +8,7 @@ the E3SM commit in the linked submodule. To build the stack:
 1) `git clone --recurse-submodules -b rfiorella/initial-ci git@github.com:amanzi/COMPASS-ELM-ATS`
 2) If building locally, need copy of Amanzi-ATS repo
 3) Build TPLS as normal
-4) Build ATS using `--enable-elm_api` in bootstrap
+4) Build ATS using `--enable-elm_ats_api` in bootstrap
 5) (optional) if building on a machine not supported by E3SM, you'll need to update cmake files for E3SM. Examples are provided in cime_files in this repo for how these were configured for the docker machine.
 6) `cd E3SM/cime/scripts`
 7) set up a new case - following steps provide an example using the GCREW transect: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case {CASE_DIR}`
