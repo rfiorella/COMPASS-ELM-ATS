@@ -8,6 +8,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: test nf-config in base image
+        run: |
+          docker run -it metsi/amanzi-tpls:0.98.9-mpich /home/amanzi_user/install/tpls/bin/nf-config
+      - name: test nf-config in base image
+        run: |
+          docker run -it metsi/ats:compass-ats-base /home/amanzi_user/install/tpls/bin/nf-config
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
