@@ -7,6 +7,8 @@ FROM metsi/ats:compass-ats-base
 ARG https_proxy=
 ARG http_proxy=
 
+RUN /home/amanzi_user/install/tpls/bin/nf-config
+
 # Set path to make it easier to run amanzi
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
@@ -26,8 +28,9 @@ COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
 COPY cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
 
-# need a version of python 8 currently for this version of cime
+RUN /home/amanzi_user/install/tpls/bin/nf-config
 
+# add libxml, perl interface for CIME
 RUN apt-get -q update -y && apt-get install -y \
     libxml2 \
     libxml2-dev \
@@ -46,16 +49,21 @@ RUN apt-get -q update -y && apt-get install -y \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
 
+
+RUN /home/amanzi_user/install/tpls/bin/nf-config
+
 #USER amanzi_user
 ENV USER=amanzi_user \
     CIMEROOT=home/amanzi_user/E3SM/cime \
-    PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib:$PYTHONPATH \
+    PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib \
     CIME_MODEL=e3sm \
     ATS_DIR=/home/amanzi_user/install/ \
     NETCDF_PATH=/home/amanzi_user/install/tpls \
     HDF5_HOME=/home/amanzi_user/install/tpls \
     HDF5_PATH=/home/amanzi_user/install/tpls 
 WORKDIR /home/amanzi_user
+
+RUN /home/amanzi_user/install/tpls/bin/nf-config
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
 
