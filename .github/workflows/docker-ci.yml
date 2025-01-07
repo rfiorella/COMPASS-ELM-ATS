@@ -13,7 +13,7 @@ jobs:
           docker run metsi/amanzi-tpls:0.98.9-mpich /bin/bash -c "/home/amanzi_user/install/tpls/bin/nf-config"
       - name: test nf-config in base image
         run: |
-          docker run metsi/ats:compass-ats-base /bin/bash -c "/home/amanzi_user/install/tpls/bin/nf-config"
+          docker run metsi/ats:master-latest /bin/bash -c "/home/amanzi_user/install/tpls/bin/nf-config"
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
