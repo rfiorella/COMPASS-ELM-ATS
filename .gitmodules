@@ -2,7 +2,3 @@
 	path = E3SM
 	url = git@github.com:rfiorella/ELM-ATS
 	branch = EMI-ats
-[submodule "amanzi"]
-	path = amanzi
-	url = git@github.com:amanzi/amanzi
-	branch = master
