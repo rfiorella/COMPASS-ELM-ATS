@@ -7,8 +7,6 @@ FROM metsi/ats:master-latest
 ARG https_proxy=
 ARG http_proxy=
 
-RUN /home/amanzi_user/install/tpls/bin/nf-config
-
 # Set path to make it easier to run amanzi
 ENV PATH=/home/amanzi_user/install/bin:${PATH}
 RUN echo $PATH
@@ -27,8 +25,6 @@ ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
 COPY cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
-
-RUN /home/amanzi_user/install/tpls/bin/nf-config
 
 # add libxml, perl interface for CIME
 RUN apt-get -q update -y && apt-get install -y \
@@ -49,9 +45,6 @@ RUN apt-get -q update -y && apt-get install -y \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
 
-
-RUN /home/amanzi_user/install/tpls/bin/nf-config
-
 #USER amanzi_user
 ENV USER=amanzi_user \
     CIMEROOT=home/amanzi_user/E3SM/cime \
@@ -61,9 +54,12 @@ ENV USER=amanzi_user \
     NETCDF_PATH=/home/amanzi_user/install/tpls \
     HDF5_HOME=/home/amanzi_user/install/tpls \
     HDF5_PATH=/home/amanzi_user/install/tpls 
+
+RUN cd /home/amanzi_user/install/lib \
+    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake  
+
 WORKDIR /home/amanzi_user
 
-RUN /home/amanzi_user/install/tpls/bin/nf-config
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
 

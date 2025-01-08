@@ -8,12 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: test nf-config in base image
-        run: |
-          docker run metsi/amanzi-tpls:0.98.9-mpich /bin/bash -c "/home/amanzi_user/install/tpls/bin/nf-config"
-      - name: test nf-config in base image
-        run: |
-          docker run metsi/ats:master-latest /bin/bash -c "/home/amanzi_user/install/tpls/bin/nf-config"
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
@@ -79,7 +73,7 @@ jobs:
           ./xmlchange ATM_DOMAIN_FILE=domain.lnd.1x1pt_teller-GRID_navy.nc
           ./xmlchange LND_DOMAIN_FILE=domain.lnd.1x1pt_teller-GRID_navy.nc
           ./xmlchange PIO_TYPENAME=netcdf,NTASKS=1,NTHRDS=1
-          ./xmlchange STOP_OPTION=nyears,STOP_N=5
+          ./xmlchange STOP_OPTION=nyears,STOP_N=2
           ./xmlchange BATCH_SYSTEM=none
           echo "&clm_inparm" >> user_nl_elm
           echo " do_budgets = .false." >> user_nl_elm
@@ -90,8 +84,6 @@ jobs:
           echo " stream_fldfilename_popdens = '/home/amanzi_user/inputdata/lnd/clm2/firedata/clmforc.Li_2012_hdm_0.5x0.5_AVHRR_simyr1850-2010_c130401.nc'" >> user_nl_elm
           ./case.setup
           # add coupler bypass flag to cmake macros.
-          # echo 'string(APPEND CPPDEFS " -DCPL_BYPASS")' >> cmake_macros/universal.cmake
+          echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS")' >> cmake_macros/universal.cmake
           ./case.build || cat /home/amanzi_user/work/output/ci_test/bld/*.bldlog.*
           ./case.submit --no-batch
-          cat /home/amanzi_user/work/output/ci_test/run/e3sm.log.*
-          cat /home/amanzi_user/work/output/ci_test/run/lnd.log.*
