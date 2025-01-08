@@ -1,4 +1,4 @@
 #/bin/bash
 
 # get input data from github.
-git clone https://github.com/fmyuan/pt-e3sm-inputdata.git
+git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata.git
