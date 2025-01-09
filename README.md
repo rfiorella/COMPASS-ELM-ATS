@@ -18,7 +18,7 @@ If wanting to build on ubuntu/mac locally:
    - blas/lapack-dev
    - libcurl-dev: `sudo apt-get install libcurl4-gnutls-dev`
 2) `git clone --recurse-submodules -b rfiorella/initial-ci git@github.com:amanzi/COMPASS-ELM-ATS ${ELM_ATS_SRC_DIR}`
-3) `git clone git@github.com:rfiorella/pt-e3sm-inputdata ${E3SM_INPUTDATA_DIR}`  Unpack the inputdata files: `cd ${E3SM_INPUT_DATA}; . unpack.sh`
+3) `git clone git@github.com:rfiorella/pt-e3sm-inputdata ${E3SM_WORK_DIR}/inputdata`  Unpack the inputdata files: `cd ${E3SM_WORK_DIR}/inputdata; . unpack.sh`
 4) If building locally, need copy of Amanzi-ATS repo
 5) Build TPLS as normal
 6) Build ATS using `--enable-elm_ats_api` in bootstrap.  Make sure to follow standard ATS conventions, e.g. defining an ATS_DIR environmental variable.
@@ -29,21 +29,19 @@ If wanting to build on ubuntu/mac locally:
   - `cp COMPASS-ELM-ATS/gnu_docker-ats.cmake ~/.cime/COMPILER_MACHINENAME.cmake`
   - edit `~/.cime/config_machines.xml`, adding an entry for MACHINENAME based on one of the existing machines.
  
-8) `cd ${ELM_ATS_SRC_DIR}/E3SM/cime/scripts`
-9) set up a new case - following steps provide an example using the GCREW transect: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case {CASE_DIR}`
-10) `cd {CASE_DIR}`
-11) `. ${ELM_ATS_SRC_DIR}/scripts/xmlchange_elm_ats.sh`
-12) `./case.setup`
+9) `cd ${ELM_ATS_SRC_DIR}/E3SM/cime/scripts`
+10) set up a new case - following steps provide an example using the GCREW transect: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case ${E3SM_WORK_CASE_DIR}`
+11) `cd {CASE_DIR}`
+12) `. ${ELM_ATS_SRC_DIR}/scripts/xmlchange_elm_only.sh`
 13) `./case.build`
-14) Need a folder that describes where E3SM holds inputdata - i.e., $DIN_LOC_ROOT in the config_machines.xml from step 5
-15) Changes needed to user_nl_elm to run this case - user_nl_elm should contain at least (assuming we are using the coupler bypass as above compset indicates):
-```
-metdata_type = 'gswp3'
-metdata_bypass = '$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_US-GC03-GRID/cpl_bypass_full'
-fsurdat = '$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_110x1pt_US-GC_TransTEMPEST_c20230901.nc'
+14) `./case.submit`
 
-use_ats = .true.
-ats_inputdir = '$DIN_LOC_ROOT/lnd/clm2/ats'
-ats_inputfile = 'column_elm4ats.xml'
-```
-16) `./case.submit`
+# Setting up and running a case with ATS
+
+Effectively this follows from step 9 above, but with changes
+
+1) cd into ${ELM_ATS_SRC_DIR}/E3SM/cime/scripts and create the case: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case ${E3SM_WORK_DIR}/cases/CASE_NAME`
+2) Copy the xmlchange_elm_ats.sh file into your case directory and modify it with the correct input files (set up the case, see e.g. ats_demos/....! WIP): `cp ${ELM_ATS_SRC_DIR}/scripts/xmlchange_elm_ats.sh ${E3SM_WORK_DIR}/cases/CASE_NAME/`, then run it: `. xmlchange_elm_ats.sh`
+3) Edit the file `${E3SM_WORK_DIR}/inputdata/lnd/clm2/ats/*_elm4ats.xml` file you named above, getting mesh paths right.
+4) `./case.build`
+5) `./case.submit`
