@@ -41,7 +41,6 @@ sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.x
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
-#./xmlchange HIST_N=1
 ./xmlchange DEBUG=TRUE
 
 # set up the user_nl_elm file prior to setup
