@@ -62,10 +62,9 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
           echo "E3SM_WORK_DIR=/home/amanzi_user/work" >> $GITHUB_ENV
           echo "ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM" >> $GITHUB_ENV
-          . examples/oakharbor_column/build_example.sh
+          . /home/amanzi_user/COMPASS_ELM_ATS/examples/oakharbor_column/build_example.sh
