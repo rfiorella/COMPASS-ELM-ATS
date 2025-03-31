@@ -67,4 +67,5 @@ jobs:
         run: |
           export E3SM_WORK_DIR=/home/amanzi_user/work
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export MACHINE_NAME=docker-ats
           . $(find / -path '*/oakharbor_column/build_example.sh')
