@@ -7,7 +7,7 @@ set -e
 export RUN_NAME="oakharbor_column"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
-export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
+export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=TRUE
 
 # create the case
