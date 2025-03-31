@@ -65,6 +65,6 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          echo "E3SM_WORK_DIR=/home/amanzi_user/work" >> $GITHUB_ENV
-          echo "ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM" >> $GITHUB_ENV
-          . /home/amanzi_user/COMPASS-ELM-ATS/examples/oakharbor_column/build_example.sh
+          export E3SM_WORK_DIR=/home/amanzi_user/work
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          . $(find / -path '*/oakharbor_column/build_example.sh')
