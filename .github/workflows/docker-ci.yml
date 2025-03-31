@@ -67,4 +67,4 @@ jobs:
         run: |
           echo "E3SM_WORK_DIR=/home/amanzi_user/work" >> $GITHUB_ENV
           echo "ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM" >> $GITHUB_ENV
-          . /home/amanzi_user/COMPASS_ELM_ATS/examples/oakharbor_column/build_example.sh
+          . /home/amanzi_user/COMPASS-ELM-ATS/examples/oakharbor_column/build_example.sh
