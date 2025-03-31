@@ -8,6 +8,7 @@ export RUN_NAME="oakharbor_column"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
+export GITHUB_ACTIONS=TRUE
 
 # create the case
 echo "Creating case"
@@ -20,7 +21,11 @@ ${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRD
 echo ""
 echo "Setting up case input"
 echo "----------------------"
-cp ./* ${CASE_DIR}
+if [ $GITHUB_ACTIONS ]; then
+  cp $(find / -path '*/oakharbor_column')/* ${CASE_DIR}
+else
+  cp ./* ${CASE_DIR}
+fi
 cd ${CASE_DIR}
 sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.xml
 
