@@ -69,4 +69,5 @@ jobs:
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
-          . $(find / -path '*/oakharbor_column/build_example.sh')
+          cd $(find / -path '*/oakharbor_column')
+          . build_example.sh
