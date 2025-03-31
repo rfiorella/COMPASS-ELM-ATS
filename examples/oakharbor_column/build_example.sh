@@ -22,6 +22,7 @@ echo ""
 echo "Setting up case input"
 echo "----------------------"
 if [ $GITHUB_ACTIONS ]; then
+  echo "finding oakharbor_column example directory..."
   cp $(find / -path '*/oakharbor_column')/* ${CASE_DIR}
 else
   cp ./* ${CASE_DIR}
