@@ -42,7 +42,35 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build Docker image
         run: docker build --push --build-arg amanzi_branch='master' --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch='master' --file Docker/Dockerfile-ATS-ELM --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
-  test:
+  test-elmats:
+    needs: build
+    name: Run ELM-ATS test
+    runs-on: ubuntu-latest
+    container:
+      image: metsi/compass-elm-ats:latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+        run: |
+          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
+          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
+          cd /home/amanzi_user/inputdata/
+          ./unpack.sh
+          cd /home/amanzi_user
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHA_PAT }}
+      - name: run test case
+        run: |
+          export E3SM_WORK_DIR=/home/amanzi_user
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export MACHINE_NAME=docker-ats
+          export COMPILER_NAME=gnu
+          . $(find / -path '*/oakharbor_column/build_example.sh')
+  test-elmonly:
     needs: build
     name: Run ELM test
     runs-on: ubuntu-latest
@@ -69,4 +97,4 @@ jobs:
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
-          . $(find / -path '*/oakharbor_column/build_example.sh')
+          . $(find / -path '*/oakharbor_elmonly/build_example.sh')
