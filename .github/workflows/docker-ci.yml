@@ -52,13 +52,9 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+      - name: deal with weird HOME issue
         run: |
           echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
-          cd /home/amanzi_user/inputdata/
-          ./unpack.sh
-          cd /home/amanzi_user
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
@@ -80,13 +76,9 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+      - name: deal with weird HOME issue
         run: |
           echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
-          cd /home/amanzi_user/inputdata/
-          ./unpack.sh
-          cd /home/amanzi_user
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
@@ -108,13 +100,9 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+      - name: deal with weird HOME issue
         run: |
           echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
-          cd /home/amanzi_user/inputdata/
-          ./unpack.sh
-          cd /home/amanzi_user
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
@@ -136,13 +124,9 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+      - name: deal with weird HOME issue
         run: |
           echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
-          cd /home/amanzi_user/inputdata/
-          ./unpack.sh
-          cd /home/amanzi_user
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:

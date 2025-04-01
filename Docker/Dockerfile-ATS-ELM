@@ -40,10 +40,15 @@ RUN apt-get -q update -y && apt-get install -y \
     # need to make each of these directories explicitly because RUN uses
     # /bin/sh and so brace expansion is not available:
     && cd /home/amanzi_user \
-    && mkdir -p work/inputdata \
     && mkdir -p work/cases \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
+
+# get and unpack input data
+RUN cd /home/amanzi_user/work \
+    && git clone --depth 1 -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata inputdata \
+    && cd inputdata \
+    && . unpack.sh
 
 #USER amanzi_user
 ENV USER=amanzi_user \
