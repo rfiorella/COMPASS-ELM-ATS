@@ -44,7 +44,7 @@ jobs:
         run: docker build --push --build-arg amanzi_branch='master' --build-arg amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}} --build-arg ats_branch='master' --file Docker/Dockerfile-ATS-ELM --tag ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest .
   test-elmats:
     needs: build
-    name: Run ELM-ATS test
+    name: ELM-ATS single column
     runs-on: ubuntu-latest
     container:
       image: metsi/compass-elm-ats:latest
@@ -72,7 +72,7 @@ jobs:
           . $(find / -path '*/oakharbor_column/build_example.sh')
   test-elmonly:
     needs: build
-    name: Run ELM test
+    name: ELM only single column
     runs-on: ubuntu-latest
     container:
       image: metsi/compass-elm-ats:latest
@@ -100,7 +100,7 @@ jobs:
           . $(find / -path '*/oakharbor_elmonly/build_example.sh')
   serial-transect:
     needs: build
-    name: Test transect serially
+    name: Serial transect
     runs-on: ubuntu-latest
     container:
       image: metsi/compass-elm-ats:latest
@@ -125,10 +125,10 @@ jobs:
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
-          . $(find / -path '*/oakharbor_elmonly/build_serial.sh')
+          . $(find / -path '*/tempest_transect/build_serial.sh')
   parallel-transect:
     needs: build
-    name: Test transect in parallel
+    name: Parallel transect
     runs-on: ubuntu-latest
     container:
       image: metsi/compass-elm-ats:latest
