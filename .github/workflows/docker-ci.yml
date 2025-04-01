@@ -61,7 +61,7 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user
+          export E3SM_WORK_DIR=/home/amanzi_user/work
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
@@ -85,7 +85,7 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user
+          export E3SM_WORK_DIR=/home/amanzi_user/work
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
@@ -109,7 +109,7 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user
+          export E3SM_WORK_DIR=/home/amanzi_user/work
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
@@ -133,7 +133,7 @@ jobs:
           token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user
+          export E3SM_WORK_DIR=/home/amanzi_user/work
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
