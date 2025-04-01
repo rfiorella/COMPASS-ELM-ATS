@@ -98,3 +98,59 @@ jobs:
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
           . $(find / -path '*/oakharbor_elmonly/build_example.sh')
+  serial-transect:
+    needs: build
+    name: Test transect serially
+    runs-on: ubuntu-latest
+    container:
+      image: metsi/compass-elm-ats:latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+        run: |
+          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
+          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
+          cd /home/amanzi_user/inputdata/
+          ./unpack.sh
+          cd /home/amanzi_user
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHA_PAT }}
+      - name: run test case
+        run: |
+          export E3SM_WORK_DIR=/home/amanzi_user
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export MACHINE_NAME=docker-ats
+          export COMPILER_NAME=gnu
+          . $(find / -path '*/oakharbor_elmonly/build_serial.sh')
+  parallel-transect:
+    needs: build
+    name: Test transect in parallel
+    runs-on: ubuntu-latest
+    container:
+      image: metsi/compass-elm-ats:latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - name: deal with weird undocumented HOME issue, cime workaround for GHA runners, and setup input datafiles
+        run: |
+          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
+          git clone -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata /home/amanzi_user/inputdata
+          cd /home/amanzi_user/inputdata/
+          ./unpack.sh
+          cd /home/amanzi_user
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHA_PAT }}
+      - name: run test case
+        run: |
+          export E3SM_WORK_DIR=/home/amanzi_user
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export MACHINE_NAME=docker-ats
+          export COMPILER_NAME=gnu
+          . $(find / -path '*/tempest_transect/build_parallel.sh')
