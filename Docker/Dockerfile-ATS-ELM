@@ -50,10 +50,12 @@ RUN cd /home/amanzi_user/work \
     && cd inputdata \
     && . unpack.sh \
     # trim excess data not used in CI or COMPASS
-    && rm -rf atm/datm7/CLM1PT_DATA \
-    && rm -rf atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid \
-    && rm -rf atm/datm7/GSWP3_daymet \
-    && rm -rf atm/datm7/Daymet_ERA5
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/CLM1PT_data \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_42FLUXNETSITES \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/GSWP3_daymet \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/Daymet_ERA5 \
+    && rm -rfv /home/amanzi_user/work/inputdata/.git 
 
 #USER amanzi_user
 ENV USER=amanzi_user \
