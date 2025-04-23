@@ -63,6 +63,6 @@ echo ""
 echo "Run the case yourself:"
 echo "----------------------"
 echo "cd ${CASE_DIR} && ./case.submit"
-if [ $GITHUB_ACTIONS ]; then
+if [ "$GITHUB_ACTIONS" = "TRUE" ]; then
   cd ${CASE_DIR} && ./case.submit --no-batch
 fi

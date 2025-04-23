@@ -7,8 +7,8 @@ set -e
 export RUN_NAME="oakharbor_column"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
-export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
-export GITHUB_ACTIONS=TRUE
+export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
+export GITHUB_ACTIONS=FALSE
 
 # create the case
 echo "Creating case"
@@ -21,7 +21,7 @@ ${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRD
 echo ""
 echo "Setting up case input"
 echo "----------------------"
-if [ $GITHUB_ACTIONS ]; then
+if [ "${GITHUB_ACTIONS}" = "TRUE" ]; then
   echo "finding oakharbor_column example directory..."
   echo "PATH is $(find / -path '*/examples/oakharbor_column')"
   cp $(find / -path '*/examples/oakharbor_column')/* ${CASE_DIR}
@@ -62,7 +62,7 @@ echo ""
 echo "Running case.setup"
 echo "----------------------"
 ./case.setup
-echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS")' >> cmake_macros/universal.cmake
+echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS -DUSE_ATS")' >> cmake_macros/universal.cmake
 
 # build
 echo ""
@@ -75,6 +75,6 @@ echo ""
 echo "Run the case yourself:"
 echo "----------------------"
 echo "cd ${CASE_DIR} && ./case.submit"
-if [ $GITHUB_ACTIONS ]; then
+if [ "$GITHUB_ACTIONS" = "TRUE" ]; then
   cd ${CASE_DIR} && ./case.submit --no-batch 
 fi 
