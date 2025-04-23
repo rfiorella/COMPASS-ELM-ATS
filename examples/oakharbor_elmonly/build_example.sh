@@ -4,11 +4,11 @@
 set -e
 
 # set up local variables
-export RUN_NAME="oakharbor_column"
+export RUN_NAME="oakharbor_elmonly"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
-export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
-export GITHUB_ACTIONS=TRUE
+export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
+export GITHUB_ACTIONS=FALSE
 
 # create the case
 echo "Creating case"
@@ -21,15 +21,8 @@ ${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRD
 echo ""
 echo "Setting up case input"
 echo "----------------------"
-if [ $GITHUB_ACTIONS ]; then
-  echo "finding oakharbor_column example directory..."
-  echo "PATH is $(find / -path '*/examples/oakharbor_column')"
-  cp $(find / -path '*/examples/oakharbor_column')/* ${CASE_DIR}
-else
-  cp ./* ${CASE_DIR}
-fi
+cp ./* ${CASE_DIR}
 cd ${CASE_DIR}
-sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.xml
 
 ./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${E3SM_WORK_DIR}/inputdata
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
@@ -57,7 +50,7 @@ echo ""
 echo "Running case.setup"
 echo "----------------------"
 ./case.setup
-echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS -DUSE_ATS")' >> cmake_macros/universal.cmake
+echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS")' >> cmake_macros/universal.cmake
 
 # build
 echo ""
