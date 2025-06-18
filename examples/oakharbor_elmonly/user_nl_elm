@@ -8,7 +8,7 @@
  check_finidat_year_consistency = .false.
 
 &clm_inparm
- do_budgets = .false.
+ do_budgets = .true.
  use_nofire = .true.
  metdata_type = 'gswp3'
  metdata_bypass = '$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_Oakharbor-Grid/cpl_bypass_full'
@@ -25,8 +25,7 @@
 
  hist_empty_htapes = .true.
  hist_nhtfrq = -24
- hist_fincl1 = 'TBOT', 'PBOT','RH','RAIN','SNOW', 'TLAI', 'ZWT', 'SMP', 'SOILLIQ', 'SOILICE','SOIL_PRESSURE'
+ hist_fincl1 = 'TBOT', 'PBOT','RH','RAIN','SNOW', 'TLAI', 'ZWT', 'SMP', 'SOILLIQ', 'SOILICE'
  hist_mfilt = 1
 
- use_ats = .false.
 
