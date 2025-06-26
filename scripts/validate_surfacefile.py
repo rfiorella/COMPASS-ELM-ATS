@@ -25,22 +25,22 @@ def validate_surfacevars(ds):
     # test the constraints above:
     if not (veg_lunit == 100.):
         print("FAIL: PCT_NATVEG not equal to 100%", file=sys.stderr)
-        sys.exit(3)
-    elif (lake_lunit > 0.):
+        fail = True
+    if (lake_lunit > 0.):
         print("FAIL: PCT_LAKE > 0", file=sys.stderr)
-        sys.exit(3)
-    elif (all(urban_lunit) > 0.):
+        fail = True
+    if (all(urban_lunit) > 0.):
         print("FAIL: ANY PCT_LAKE > 0", file=sys.stderr)
-        sys.exit(3)
-    elif (glac_lunit > 0.):
+        fail = True
+    if (glac_lunit > 0.):
         print("FAIL: PCT_GLACIER > 0", file=sys.stderr)
-        sys.exit(3)
-    elif (crop_lunit > 0.):
+        fail = True
+    if (crop_lunit > 0.):
         print("FAIL: PCT_CROP > 0", file=sys.stderr)
-        sys.exit(3)
-    elif (wetl_lunit > 0.):
+        fail = True
+    if (wetl_lunit > 0.):
         print("FAIL: PCT_WETLAND > 0", file=sys.stderr)
-        sys.exit(3)
+        fail = True
 
     # ensure there are no polygonal tundra landunits
     polygonal_vars = ['PCT_HCP', 'PCT_FCP', 'PCT_LCP']
@@ -48,25 +48,36 @@ def validate_surfacevars(ds):
         if var_name in ds.variables:
             if not ((ds[var_name] == 0).all()):
                 print(f"FAIL: {var_name} is present but contains non-zero values", file=sys.stderr)
-                sys.exit(3)
+                fail = True
 
     # test for only one PFT:
     pft_fracs = pft_fractions.values.flatten()
     if not (np.count_nonzero(pft_fracs == 100.) == 1 and np.count_nonzero(pft_fracs) == 1):
         print("FAIL: PCT_NAT_PFT has more than one PFT defined", file=sys.stderr)
         print(pft_fracs)
-        sys.exit(4)
+        fail = True
 
+    if not (fail):
+      print("PASS", file=sys.stdout)
+    else:
+      sys.exit(3)
 
 def main():
     parser = argparse.ArgumentParser(description="Validate NetCDF Variables.")
     parser.add_argument("--file_name", type=str, required = True, help = "NetCDF surface file to validate")
     args = parser.parse_args()
 
+    print(f"Testing dataset: {args.file_name}")
     try:
         ds = xr.open_dataset(args.file_name)
     except FileNotFoundError:
         print(f"File not found: {args.file_name}", file=sys.stderr)
+
+    try:
+        validate_surfacevars(ds)
+    except Exception as e:
+        print(f"Unexpected error in validation: {e}", file=sys.stderr)
+        sys.exit(4)
 
 if __name__ == "__main__":
     main()
