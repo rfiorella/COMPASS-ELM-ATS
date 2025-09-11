@@ -3,6 +3,9 @@
 # exit on error
 set -e
 
+export E3SM_WORK_DIR=/home/e3smuser
+export ELM_ATS_SRC_DIR=/home/e3smuser/E3SM
+
 # set up local variables
 export RUN_NAME="oakharbor_elmonly"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
