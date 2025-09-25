@@ -2,7 +2,8 @@
 # provides backbone for e3sm testing
 
 #FROM metsi/ats:master-latest
-FROM metsi/ats:master-latest
+FROM metsi/ats:latest
+
 
 ARG https_proxy=
 ARG http_proxy=

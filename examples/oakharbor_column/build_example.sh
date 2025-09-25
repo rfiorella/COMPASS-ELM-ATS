@@ -3,6 +3,9 @@
 # exit on error
 set -e
 
+export E3SM_WORK_DIR=/home/amanzi_user/work
+export ELM_ATS_SRC_DIR=/home/amanzi_user/compass/E3SM
+
 # set up local variables
 export RUN_NAME="oakharbor_column"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
