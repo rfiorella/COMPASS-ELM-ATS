@@ -5,7 +5,7 @@ evaluator before state has been initialized.
 
 Steps to reproduce (using container scripts, but probably similar if you installed on macOS or linux directly):
 1) There is a kokkos issue in ELM-ATS API that hasn't been merged, so build ATS from rich/elm-ats-kokkos-patch branch.
-For me this is: `./deploy-ats-docker.sh --amanzi_src_dir='..' --ats_branch='rich/elm-ats-kokkos-patch'` from the rich/debug-deploy amanzi branch
+For me this is (from the Amanzi repo): `./deploy-ats-docker.sh --amanzi_src_dir='..' --ats_branch='rich/elm-ats-kokkos-patch'` from the rich/debug-deploy amanzi branch
 2) From this repo, run `./deploy-ats-elm-docker.sh` (note you may have to change the name of the image in FROM to what ever image is the output of #1)
 3) Run the container. E.g., from the root directory of this repo: `docker run -it -e E3SM_WORK_DIR=/home/amanzi_user/work -e ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM -e MACHINE_NAME=docker-ats -e COMPILER_NAME=gnu -v $(pwd):/home/amanzi_user/compass -e HOME=/home/amanzi_user metsi/ats:elm_api`
 4) For some reason this install requires git credentials - I put fake ones in the container: 
