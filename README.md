@@ -42,7 +42,7 @@ If wanting to build on ubuntu/mac locally:
 4) If building locally, need copy of Amanzi-ATS repo
 5) Build TPLS as normal
 6) Build ATS using `--enable-elm_ats_api` in bootstrap.  Make sure to follow standard ATS conventions, e.g. defining an ATS_DIR environmental variable.
-7) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_TPLS_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
+7) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
 8) (optional) If building on a machine not supported by E3SM, you'll need to update cmake files for E3SM. Examples are provided in cime_files in this repo for how these were configured for the docker machine. Typically they get placed in ~/.cime or /.cime if they are not part of the E3SM repo (in the container, they are in both locations).
   - `mkdir ~/.cime`
   - `cp COMPASS-ELM-ATS/cime_files/config_machines.xml ~/.cime`
