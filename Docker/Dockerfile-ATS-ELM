@@ -49,7 +49,7 @@ RUN apt-get -q update -y && apt-get install -y \
 RUN cd /home/amanzi_user/work \
     && git clone --depth 1 -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata inputdata \
     && cd inputdata \
-    && . unpack.sh \
+    && ./unpack.sh \
     # trim excess data not used in CI or COMPASS
     && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/CLM1PT_data \
     && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid \
