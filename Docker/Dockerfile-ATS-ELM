@@ -2,7 +2,8 @@
 # provides backbone for e3sm testing
 
 #FROM metsi/ats:master-latest
-FROM metsi/ats:master-latest
+FROM metsi/ats:latest
+
 
 ARG https_proxy=
 ARG http_proxy=
@@ -40,10 +41,22 @@ RUN apt-get -q update -y && apt-get install -y \
     # need to make each of these directories explicitly because RUN uses
     # /bin/sh and so brace expansion is not available:
     && cd /home/amanzi_user \
-    && mkdir -p work/inputdata \
     && mkdir -p work/cases \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
+
+# get and unpack input data
+RUN cd /home/amanzi_user/work \
+    && git clone --depth 1 -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata inputdata \
+    && cd inputdata \
+    && ./unpack.sh \
+    # trim excess data not used in CI or COMPASS
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/CLM1PT_data \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_42FLUXNETSITES \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/GSWP3_daymet \
+    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/Daymet_ERA5 \
+    && rm -rfv /home/amanzi_user/work/inputdata/.git 
 
 #USER amanzi_user
 ENV USER=amanzi_user \
