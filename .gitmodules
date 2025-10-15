@@ -2,3 +2,6 @@
 	path = E3SM
 	url = git@github.com:amanzi/E3SM
 	branch = EMI-ats
+[submodule "amanzi"]
+	path = amanzi
+	url = ./amanzi
