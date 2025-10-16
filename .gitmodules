@@ -4,4 +4,4 @@
 	branch = EMI-ats
 [submodule "amanzi"]
 	path = amanzi
-	url = ./amanzi
+	url = git@github.com:amanzi/amanzi
