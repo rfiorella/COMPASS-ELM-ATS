@@ -1,7 +1,8 @@
 [submodule "e3sm"]
 	path = E3SM
 	url = git@github.com:amanzi/E3SM
-	branch = EMI-ats
+	branch = elm-ats-dev
 [submodule "amanzi"]
 	path = amanzi
 	url = git@github.com:amanzi/amanzi
+  branch = elm_ats
