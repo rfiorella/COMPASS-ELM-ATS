@@ -3,8 +3,13 @@
 # exit on error
 set -e
 
-export E3SM_WORK_DIR=/home/amanzi_user/work
-export ELM_ATS_SRC_DIR=/home/amanzi_user/compass/E3SM
+
+if [ -z "${E3SM_WORK_DIR+x}" ]; then
+    export E3SM_WORK_DIR=/home/e3smuser
+fi
+if [ -z "${ELM_ATS_SRC_DIR+x}" ]; then
+    export ELM_ATS_SRC_DIR=/home/e3smuser/E3SM
+fi
 
 # set up local variables
 export RUN_NAME="oakharbor_column"
@@ -16,9 +21,9 @@ export GITHUB_ACTIONS=FALSE
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""
@@ -65,7 +70,7 @@ echo ""
 echo "Running case.setup"
 echo "----------------------"
 ./case.setup
-echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS -DUSE_ATS")' >> cmake_macros/universal.cmake
+echo -e '\nstring(APPEND CPPDEFS " -DCPL_BYPASS -DUSE_ATS_LIB")' >> cmake_macros/universal.cmake
 
 # build
 echo ""

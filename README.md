@@ -29,39 +29,45 @@ Common issues:
 
 
 ## Local Builds
-If wanting to build on ubuntu/mac locally:
+To build locally on a Mac or Linux machine, follow the following steps.
 
-0) set up directory structure and environmental variables for using E3SM .... (ADD MORE HERE)
-1) make sure you have dependencies:
+### Precursors
+
+0) Set environmental variables for using ELM+ATS.
+   - `ELM_ATS_SRC_DIR` = path to where you will clone this repository
+   - Set standard ATS environmental variables:
+      - `export AMANZI_SRC_DIR=${ELM_ATS_SRC_DIR}/amanzi`
+      - `export ATS_SRC_DIR=${ELM_ATS_SRC_DIR}/amanzi/src/physics/ats`
+      - Set `AMANZI_TPLS_DIR` and `AMANZI_TPLS_BUILD_DIR` as for standard Amanzi-ATS TPL installations.
+      - Set `AMANZI_DIR` and `AMANZI_BUILD_DIR` as for standard Amanzi-ATS installations.
+   - Set standard E3SM environmental variables:
+      - `export E3SM_SRC_DIR=${ELM_ATS_SRC_DIR}/E3SM`
+      - `MACHINE_NAME` and `COMPILER_NAME` -- set your machine and compiler (likely gnu) names -- see later steps for how this is used
+      - Set an `E3SM_WORK_DIR` where you will place cases/builds/runs.
+
+1) make sure you have dependencies (or their homebrew equivalents):
    - Perl LibXML: `sudo apt-get install libxml-libxml-perl`
-   - MPI:
-   - blas/lapack-dev
+   - MPI: `sudo apt-get install openmpi-dev`
+   - blas/lapack-dev `sudo apt-get install libblas-dev liblapack-dev`
    - libcurl-dev: `sudo apt-get install libcurl4-gnutls-dev`
-2) `git clone --recurse-submodules -b rfiorella/initial-ci git@github.com:amanzi/COMPASS-ELM-ATS ${ELM_ATS_SRC_DIR}`
+   
+2) `git clone --recurse-submodules git@github.com:amanzi/COMPASS-ELM-ATS ${ELM_ATS_SRC_DIR}`
 3) `git clone git@github.com:rfiorella/pt-e3sm-inputdata ${E3SM_WORK_DIR}/inputdata`  Unpack the inputdata files: `cd ${E3SM_WORK_DIR}/inputdata; . unpack.sh`
-4) If building locally, need copy of Amanzi-ATS repo
-5) Build TPLS as normal
-6) Build ATS using `--enable-elm_ats_api` in bootstrap.  Make sure to follow standard ATS conventions, e.g. defining an ATS_DIR environmental variable.
-7) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
-8) (optional) If building on a machine not supported by E3SM, you'll need to update cmake files for E3SM. Examples are provided in cime_files in this repo for how these were configured for the docker machine. Typically they get placed in ~/.cime or /.cime if they are not part of the E3SM repo (in the container, they are in both locations).
+4) Build Amanzi TPLs as normal (using bootstrap).
+5) Build ATS using `--enable-elm_ats_api` in bootstrap.
+6) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
+7) (optional) If building on a machine not supported by E3SM, you'll need to update cmake files for E3SM. Examples are provided in cime_files in this repo for how these were configured for the docker machine. Typically they get placed in ~/.cime or /.cime if they are not part of the E3SM repo (in the container, they are in both locations).
   - `mkdir ~/.cime`
   - `cp COMPASS-ELM-ATS/cime_files/config_machines.xml ~/.cime`
-  - `cp COMPASS-ELM-ATS/gnu_docker-ats.cmake ~/.cime/COMPILER_MACHINENAME.cmake`
-  - edit `~/.cime/config_machines.xml`, adding an entry for MACHINENAME based on one of the existing machines.
+  - `cp COMPASS-ELM-ATS/gnu_docker-ats.cmake ~/.cime/${COMPILER_NAME}_${MACHINE_NAME}.cmake`
+  - edit `~/.cime/config_machines.xml`, adding an entry for `$MACHINE_NAME` based on one of the existing machines.
  
-9) `cd ${ELM_ATS_SRC_DIR}/E3SM/cime/scripts`
-10) set up a new case - following steps provide an example using the GCREW transect: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case ${E3SM_WORK_CASE_DIR}`
-11) `cd {CASE_DIR}`
-12) `. ${ELM_ATS_SRC_DIR}/scripts/xmlchange_elm_only.sh`
-13) `./case.build`
-14) `./case.submit`
 
-# Setting up and running a case with ATS
+### Create and build the new case.
 
-Effectively this follows from step 9 above, but with changes
+Follow the examples:
 
-1) cd into ${ELM_ATS_SRC_DIR}/E3SM/cime/scripts and create the case: `./create_newcase --mach {machine_name} --res ELM_USRDAT --compset ICB20TRCNPRDCTCBC --case ${E3SM_WORK_DIR}/cases/CASE_NAME`
-2) Copy the xmlchange_elm_ats.sh file into your case directory and modify it with the correct input files (set up the case, see e.g. ats_demos/....! WIP): `cp ${ELM_ATS_SRC_DIR}/scripts/xmlchange_elm_ats.sh ${E3SM_WORK_DIR}/cases/CASE_NAME/`, then run it: `. xmlchange_elm_ats.sh`
-3) Edit the file `${E3SM_WORK_DIR}/inputdata/lnd/clm2/ats/*_elm4ats.xml` file you named above, getting mesh paths right.
-4) `./case.build`
-5) `./case.submit`
+0) `cd ${ELM_ATS_SRC_DIR}/examples/EXAMPLE_NAME`
+1) Run the enclosed script `./build_example.sh` which creates the new case and calls case.setup and case.build.
+2) Follow the on-screen instructions to run the case: `cd ${CASE_DIR} && ./case.submit`
+
