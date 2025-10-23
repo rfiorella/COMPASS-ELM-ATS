@@ -2,13 +2,13 @@
 
 ## Summary
 
-This document describes how evaporation is computed and partitioned in ELM, focusing on the combination of bare-ground evaporation and surface water evaporation for alternative hydrology models.
+This document traces how evaporation is computed and partitioned in ELM, focusing on the combination of bare-ground evaporation and surface water evaporation for alternative hydrology models.
 
-## Evaporation Components
+## 1. Surface Flux Computation
 
-### 1. Surface Flux Computation
+Individual evaporation fluxes are computed in the surface energy balance at the PFT level for both:
 
-Individual evaporation fluxes are computed in the surface energy balance:
+### E.g. Bare Ground (`frac_veg_nosno(p) == 0`, biogeophys/BareGroundFluxesMod.F90:208)
 
 **Location**: `biogeophys/BareGroundFluxesMod.F90:402-404`
 ```fortran
@@ -25,106 +25,232 @@ Where:
 - `forc_q(t)` = atmospheric specific humidity
 - `qg_*` = surface specific humidity for each surface type
 
-### 2. Ground Evaporation Partitioning
+Two additional "total" fluxes are computed, also at the PFT level:
 
-Total ground evaporation is partitioned between liquid evaporation and ice sublimation:
-
-**Location**: `biogeophys/SoilFluxesMod.F90:335-339`
+**Location**: `biogeophys/BareGroundFluxesMod.F90:397-399`
 ```fortran
-if ((h2osoi_liq(c,j)+h2osoi_ice(c,j)) > 0.) then
-   qflx_evap_grnd(p) = max(qflx_ev_snow(p)*(h2osoi_liq(c,j)/(h2osoi_liq(c,j)+h2osoi_ice(c,j))), 0._r8)
-else
-   qflx_evap_grnd(p) = 0.
-end if
-qflx_sub_snow(p) = qflx_ev_snow(p) - qflx_evap_grnd(p)
+! water fluxes from soil
+qflx_evap_soi(p)  = -raiw*dqh(p)
+qflx_evap_tot(p)  = qflx_evap_soi(p)
 ```
 
-This partitions total ground evaporation based on the liquid-to-total water ratio in the top soil layer:
-- `qflx_evap_grnd` = liquid water evaporation from ground
-- `qflx_sub_snow` = ice sublimation from ground
+> **FIX ME**
+>
+> `qflx_evap_tot` is not necessary here, it should be removed as it is
+> also set in SoilFluxesMod.F90:313, and setting it in only one place
+> would be preferable.
 
-### 3. Hydrological Usage
+### Or Vegetated (`frac_veg_nosno(p) == 0`, beogeophys/CanopyFluxesMod.F90:507):
 
-Evaporation is removed from water inputs in the hydrology calculations:
-
-**Location**: `biogeophys/SoilHydrologyMod.F90:476-477`
+**Location**: `biogeophys/CanopyFluxesMod.F90:1247-1253`
 ```fortran
+qflx_ev_snow(p) = forc_rho(t)*wtgq(p)*delq_snow
+qflx_ev_soil(p) = forc_rho(t)*wtgq(p)*delq_soil
+qflx_ev_h2osfc(p) = forc_rho(t)*wtgq(p)*delq_h2osfc
+```
+
+**Location**: `biogeophys/CanopyFluxesMod.F90:1243`
+```fortran
+qflx_evap_soi(p) = forc_rho(t)*wtgq(p)*delq(p)
+```
+
+> **FIX ME**
+>
+> In most places, in the associate block, `qflx_ev_*` are commented as
+> being in (W/m**2) when in fact they are mm/s, like all other qflx
+> variables.  Note the implied per unit area here is surface area, not
+> per unit PFT area -- they don't have the fraction factor in them.
+> See for instance BareGroundFluxesMod.F90:189, but this is throughout
+> the code.
+
+
+Note that in the case where there is no snow layers `snl(c) >= 0` then
+`qg_snow(c) = qg_soil(c)` and so, in the next timestep, 
+`qflx_ev_snow == qflx_ev_soil` (biogeophys/CanopyTemperatureMod.F90:322).
+
+
+## 2. Temperature increment.
+
+The above were (presumably) computed with last timestep's
+temperatures.  A correction to these are computed based on a
+derivative with respect to temperature and a temperature increment
+after the temperatures are updated in the
+e.g. SoilTemperature/CanopyTemperature subroutines.
+
+**Location**: `biogeophys/SoilFluxesMod.F90:218-220
+```fortran
+qflx_ev_snow(p) = qflx_ev_snow(p) + tinc(c)*cgrndl(p)
+qflx_ev_soil(p) = qflx_ev_soil(p) + tinc(c)*cgrndl(p)
+qflx_ev_h2osfc(p) = qflx_ev_h2osfc(p) + tinc(c)*cgrndl(p)
+```
+
+## 3. Water availability limitation.
+
+Because ELM is an explicit code, evap is limited to make sure it does
+not try to pull more water than is available in the top cell of the
+column.  This downregulation (not needed if using ATS) is a simple
+weighted rates problem -- all evap rates are multiplied by a factor
+`egirat` (who comes up with these names?  Would be nice to document
+what these are short for, as it would help new developers remember
+them...) which is a ratio of the available water divided by the
+weighted sum (across PFTs) of `qflx_evap_soi`.
+
+**Location**: `biogeophys/SoilFluxesMod.F90:271-277`
+```fortran
+if (egirat(c) < 1.0_r8) then
+  save_qflx_evap_soi = qflx_evap_soi(p)
+  qflx_evap_soi(p) = qflx_evap_soi(p) * egirat(c)
+  eflx_sh_grnd(p) = eflx_sh_grnd(p) + (save_qflx_evap_soi - qflx_evap_soi(p))*htvp(c)
+  qflx_ev_snow(p) = qflx_ev_snow(p) * egirat(c)
+  qflx_ev_soil(p) = qflx_ev_soil(p) * egirat(c)
+  qflx_ev_h2osfc(p) = qflx_ev_h2osfc(p) * egirat(c)
+end if
+```
+
+## 4. Ground Evaporation Partitioning
+
+The flux on snow-covered ground `qflx_ev_snow` is partitioned between
+liquid evaporation, ice sublimation, liquid dew, and snow dew:
+
+**Location**: `biogeophys/SoilFluxesMod.F90:331-346`
+```fortran
+if (qflx_ev_snow(p) >= 0._r8) then
+  ! for evaporation partitioning between liquid evap and ice sublimation,
+  ! use the ratio of liquid to (liquid+ice) in the top layer to determine split
+  if ((h2osoi_liq(c,j)+h2osoi_ice(c,j)) > 0.) then
+    qflx_evap_grnd(p) = max(qflx_ev_snow(p)*(h2osoi_liq(c,j)/(h2osoi_liq(c,j)+h2osoi_ice(c,j))), 0._r8)
+  else
+    qflx_evap_grnd(p) = 0.
+  end if
+  qflx_sub_snow(p) = qflx_ev_snow(p) - qflx_evap_grnd(p)
+else
+  if (t_grnd(c) < tfrz) then
+    qflx_dew_snow(p) = abs(qflx_ev_snow(p))
+  else
+    qflx_dew_grnd(p) = abs(qflx_ev_snow(p))
+  end if
+end if
+```
+
+Note that this is ONLY for `qflx_ev_snow`, but it actually would be
+valid for `qfx_ev_grnd` too IF there are no snow layers, as in that
+case, `qflx_ev_snow == qflx_ev_grnd`?
+
+> NOTE:
+> 
+> It remains to be seen if, in the case of no snow layers, whether
+> these get hit by the area fractions and therefore are zero, or only
+> one gets used, or what?
+
+
+## 5. Patch to Column
+
+These are then accumulated to the column level. `main/elm_driver.F90:891,1782`
+
+
+## 6. Column-level usage -- combining evap and input water to get final fluxes.
+
+Things begin to split with lots of cases and get hard to track code
+here.  This could be improved upon, or at least lots of comments added.
+
+Note that the below are all in subroutines in SoilHydrologyMod, which
+are CALLED in HydrologyNoDrainageMod.
+
+
+
+### Case for snow layers?
+
+**Location**: SoilHydrologyMod.F90:448 (Infiltration)
+
+**if snl >= 0 (no snow layers)**
+
+- `fsno` is explicitly set to 0
+- `qflx_evap` gets `qflx_evap_grnd` which is the liquid evaporation portion of `qflx_ev_snow` (or equivalently `qflx_ev_soil`), but does not include condensation.
+
+**there are snow layers**
+- `fsno` is explicitly set to frac_sno
+- `qflx_evap` gets `qflx_ev_soil` which DOES include liquid condensation
+
+
+### Partition inputs of water to surface water and soil
+
+**Location**: SoilHydrologyMod.F90:473 (Infiltration)
+``` fortran
+!1. partition surface inputs between soil and h2osfc
+qflx_in_soil(c) = (1._r8 - frac_h2osfc(c)) * (qflx_top_soil(c)  - qflx_surf(c))
+qflx_in_h2osfc(c) = frac_h2osfc(c) * (qflx_top_soil(c)  - qflx_surf(c))
+```
+
+Note that `qflx_top_soil` is discussed extensively in another notes
+file.  `qlfx_surf` is surface runoff.  So this is partitioning
+incoming water between inundated area and not-inundated area.
+
+### Remove evaporation
+
+**Location**: SoilHydrologyMod.F90:475 (Infiltration)
+```fortran
+!2. remove evaporation (snow treated in SnowHydrology)
 qflx_in_soil(c) = qflx_in_soil(c) - (1.0_r8 - fsno - frac_h2osfc(c))*qflx_evap(c)
 qflx_in_h2osfc(c) = qflx_in_h2osfc(c) - frac_h2osfc(c) * qflx_ev_h2osfc(c)
 ```
 
-Where:
-- `qflx_evap(c)` = `qflx_evap_grnd(c)` when no snow layers present (`SoilHydrologyMod.F90:452`)
-- `fsno` = snow-covered fraction
-- `frac_h2osfc(c)` = surface water fraction
-- `(1.0_r8 - fsno - frac_h2osfc(c))` = exposed soil fraction
+So, **if no snow layers**, this is the evaporation (but not
+condensation) portion of `qflx_ev_snow`, which is also the same as
+`qflx_ev_soil`, on the non-inundated portion?  
 
-## Total Evaporation for Alternative Hydrology Models
+> NOTE:
+> 
+> To me this seems like it ought to be that qflx_evap, as used here,
+> should be based on `qflx_ev_soil` not `qf_ev_snow` in the branch for
+> no snow levels (e.g. through qflx_evap).  But it isn't **wrong**,
+> just oddly coded to rely on snow being set the same as bare ground
+> calculations.
 
-### Area-Weighted Total Evaporation
+Otherwise, this is the evaporation or condensation of `qflx_ev_soil`,
+on the bare portion.
 
-For alternative hydrology models, the total evaporation should account for surface coverage fractions:
+> NOTE:
+>
+> Potential bug here?  There is an asymetry that smells here.  In the
+> case where there are no snow layers, dew is removed.  In the case
+> where there are snow layers, dew is included (on the
+> 1-fsno-frac-h2osfc portion).  So hopefully `qflx_dew_grnd` better get
+> added back in only under the condition that snl >= 0 (no snow
+> layers)?  Or if it gets added unilaterally on the bare ground
+> portion then there is double-counting of dew_grnd.
 
+
+### Add back in dew
+
+**Location**: SoilHydrologyMod.F90:1005 (WaterTable)
 ```fortran
-! Area-weighted total evaporation accounting for surface coverage fractions
-qflx_total_evap_weighted(c) = (1.0_r8 - fsno - frac_h2osfc(c)) * qflx_evap_grnd(c) + &
-                              frac_h2osfc(c) * qflx_ev_h2osfc(c)
+if (snl(c)+1 >= 1) then
+  ...
+  h2osoi_liq(c,1) = h2osoi_liq(c,1) + (1._r8 - frac_h2osfc(c))*qflx_dew_grnd(c) * dtime
+  ...
+end if
 ```
 
-### Implementation
+Ok, so this looks right -- adding back in `qflx_dew_grnd` on the
+non-inundated area is in fact correctly a function of no snow layer,
+though why write `snl(c)+1 >= 1` when everywhere else it is `snl(c) >=
+0`.
 
-```fortran
-! For alternative hydrology models
-subroutine compute_total_evaporation(bounds, num_hydrologyc, filter_hydrologyc)
-   
-   ! Local variables
-   integer :: c, fc
-   real(r8) :: fsno, frac_exposed_soil
-   
-   do fc = 1, num_hydrologyc
-      c = filter_hydrologyc(fc)
-      
-      ! Get snow fraction (0 if no snow)
-      if (col_pp%snl(c) >= 0) then
-         fsno = 0._r8
-      else
-         fsno = col_ws%frac_sno(c)
-      end if
-      
-      ! Calculate exposed soil fraction
-      frac_exposed_soil = 1.0_r8 - fsno - col_ws%frac_h2osfc(c)
-      
-      ! Total area-weighted evaporation
-      qflx_total_evap(c) = frac_exposed_soil * col_wf%qflx_evap_grnd(c) + &
-                           col_ws%frac_h2osfc(c) * col_wf%qflx_ev_h2osfc(c)
-      
-   end do
-   
-end subroutine compute_total_evaporation
-```
+But note that dew is therefore, in the case of no snow layers,
+**manually added** and is not a part of any of the other fluxes
+(e.g. not in `qflx_top_soil`).  So it will need to be accounted for in
+ATS coupling.
 
-## Key Variables
-
-- **`qflx_evap_grnd`** - Ground evaporation from bare soil (liquid water component) [mm H2O/s]
-- **`qflx_ev_h2osfc`** - Surface water evaporation from standing water [mm H2O/s]
-- **`frac_h2osfc`** - Fraction of column covered by surface water [-]
-- **`frac_sno`** - Fraction of column covered by snow [-]
-- **`qflx_ev_soil`** - Raw evaporation flux from soil computed in energy balance [mm H2O/s]
-- **`qflx_sub_snow`** - Ice sublimation component [mm H2O/s]
-
-## Key Concepts
-
-1. **Area-weighted approach** accounts for the fact that only exposed portions contribute to evaporation
-2. **`qflx_evap_grnd`** operates on the exposed soil fraction 
-3. **`qflx_ev_h2osfc`** operates on the surface water fraction
-4. **Snow-covered areas** are excluded from both evaporation terms
-5. **Partitioning between liquid and ice** is based on soil water phase composition
 
 ## ELM's Soil Evaporation Downregulation
 
 ### Soil Moisture Stress Factor (soilbeta)
 
-ELM includes its own evaporation downregulation through a soil moisture stress factor based on the Lee-Pielke 1992 approach:
+ELM includes its own evaporation downregulation through a soil
+moisture stress factor based on the Lee-Pielke 1992 approach, which is
+computed during the CanopyTemperature call but used the next timestep
+during the CanopyFluxes call (why?!?).  Flow of this code is seriously
+questionable with no documentation or comments.
 
 **Location**: `biogeophys/SurfaceResistanceMod.F90:148-158`
 ```fortran
@@ -165,184 +291,3 @@ qflx_ev_snow(p)   = -raiw*(forc_q(t) - qg_snow(c))
 qflx_ev_soil(p)   = -raiw*(forc_q(t) - qg_soil(c))  
 qflx_ev_h2osfc(p) = -raiw*(forc_q(t) - qg_h2osfc(c))
 ```
-
-### Energy Conservation Approach
-
-**Important**: ELM does NOT explicitly convert reduced latent heat to sensible heat for soil evaporation downregulation. Energy conservation occurs through:
-
-1. **Reduced latent heat flux** from evaporation limitation
-2. **Ground temperature adjustment** in subsequent timesteps to balance the surface energy budget
-3. **Iterative energy balance** in soil temperature calculations adjusts to the new energy partitioning
-
-This is different from transpiration downregulation where excess latent heat is explicitly converted to sensible heat (`CanopyFluxesMod.F90:1124`).
-
-## Implementation Considerations for Alternative Hydrology
-
-### Option 1: Follow ELM's Approach
-- Modify aerodynamic conductance with your additional stress factor
-- Let energy balance adjust naturally through ground temperature changes
-
-### Option 2: Explicit Energy Conservation
-For more conservative energy balance, explicitly convert excess latent heat to sensible heat:
-
-```fortran
-! Calculate reduction in latent heat
-original_latent_heat = qflx_ev_original * htvp(c)
-reduced_latent_heat = qflx_ev_reduced * htvp(c) 
-excess_latent_heat = original_latent_heat - reduced_latent_heat
-
-! Convert to sensible heat
-eflx_sh_grnd(p) = eflx_sh_grnd(p) + excess_latent_heat
-```
-
-## Dew Formation (Condensation) Handling
-
-### Surface Humidity and Flux Calculations
-
-ELM computes three separate surface evaporation fluxes based on surface-specific humidity:
-
-**Location**: `biogeophys/BareGroundFluxesMod.F90:402-404`
-```fortran
-qflx_ev_snow(p)   = -raiw*(forc_q(t) - qg_snow(c))   ! Snow surface
-qflx_ev_soil(p)   = -raiw*(forc_q(t) - qg_soil(c))   ! Soil surface  
-qflx_ev_h2osfc(p) = -raiw*(forc_q(t) - qg_h2osfc(c)) ! Surface water
-```
-
-**Critical Insight**: When no snow layers exist (`snl >= 0`):
-```fortran
-qg_snow(c) = qg_soil(c)  ! CanopyTemperatureMod.F90:322
-```
-Therefore: **`qflx_ev_snow = qflx_ev_soil`** when there are no snow layers.
-
-### Dew vs. Evaporation Partitioning
-
-**Only `qflx_ev_snow`** goes through dew partitioning logic:
-
-**Location**: `biogeophys/SoilFluxesMod.F90:340-346`
-```fortran
-if (qflx_ev_snow(p) >= 0._r8) then
-   ! evaporation case - partition between liquid and ice
-   qflx_evap_grnd(p) = max(qflx_ev_snow(p)*(h2osoi_liq(c,j)/(h2osoi_liq(c,j)+h2osoi_ice(c,j))), 0._r8)
-   qflx_sub_snow(p) = qflx_ev_snow(p) - qflx_evap_grnd(p)
-else
-   ! condensation case - separate dew variables
-   if (t_grnd(c) < tfrz) then
-      qflx_dew_snow(p) = abs(qflx_ev_snow(p))
-   else
-      qflx_dew_grnd(p) = abs(qflx_ev_snow(p))
-   end if
-end if
-```
-
-**`qflx_ev_soil` and `qflx_ev_h2osfc` do NOT get converted to dew variables** - they remain as potentially negative fluxes.
-
-## Complete Dew/Evaporation Tracking by Case
-
-### Case 1: Snow Layers Exist (`snl < 0`)
-
-**Surface Areas:**
-- Snow-covered: `frac_sno_eff`
-- Bare soil: `(1 - frac_sno_eff - frac_h2osfc)`  
-- Surface water: `frac_h2osfc`
-
-**Surface Fluxes:**
-- `qflx_ev_snow` ≠ `qflx_ev_soil` (different surface humidities)
-
-**Evaporation (positive fluxes):**
-- **Snow surface**: `qflx_evap_grnd` and `qflx_sub_snow` → removed from snow layers with area weight `frac_sno_eff`
-- **Bare soil**: `qflx_ev_soil` → removed via infiltration: `qflx_infl -= (1 - frac_sno) * qflx_ev_soil`
-- **Surface water**: `qflx_ev_h2osfc` → removed from `h2osfc` with area weight `frac_h2osfc`
-
-**Condensation (negative fluxes):**
-- **Snow surface**: `qflx_dew_grnd`/`qflx_dew_snow` → **added to snow layers** with area weight `frac_sno_eff`
-- **Bare soil**: Negative `qflx_ev_soil` → **added via infiltration**: `qflx_infl += abs(qflx_ev_soil) * (1 - frac_sno)`
-- **Surface water**: Negative `qflx_ev_h2osfc` → **added to `h2osfc`** with area weight `frac_h2osfc`
-
-**⚠️ POTENTIAL BUG**: Bare soil dew uses area weight `(1 - frac_sno)` instead of `(1 - frac_sno - frac_h2osfc)`, potentially double-counting surface water areas.
-
-### Case 2: No Snow Layers but Snow Cover (`snl >= 0, frac_sno > 0`)
-
-**Surface Areas:**  
-- Thin snow: `frac_sno`
-- Bare soil: `(1 - frac_sno - frac_h2osfc)`
-- Surface water: `frac_h2osfc`
-
-**Surface Fluxes:**
-- `qflx_ev_snow = qflx_ev_soil` (identical due to `qg_snow = qg_soil`)
-
-**Evaporation (positive fluxes):**
-- **All non-snow surfaces**: `qflx_ev_soil` → removed via infiltration: `qflx_infl -= (1 - frac_sno) * qflx_ev_soil`
-- **Surface water**: `qflx_ev_h2osfc` → removed from `h2osfc` with area weight `frac_h2osfc`
-
-**Condensation (negative fluxes):**
-- **All non-snow surfaces**: `qflx_dew_grnd`/`qflx_dew_snow` → **added to top soil layer** with area weight `(1 - frac_h2osfc)`
-- **Surface water**: Negative `qflx_ev_h2osfc` → **added to `h2osfc`** with area weight `frac_h2osfc`
-
-**⚠️ POTENTIAL INCONSISTENCY**: The same surface gets dew through both mechanisms:
-1. Via `qflx_dew_*` (from `qflx_ev_snow`) with weight `(1 - frac_h2osfc)`
-2. Via negative `qflx_ev_soil` in infiltration with weight `(1 - frac_sno)`
-
-### Case 3: No Snow, No Snow Layers (`snl >= 0, frac_sno = 0`)
-
-**Surface Areas:**
-- Bare soil: `(1 - frac_h2osfc)`
-- Surface water: `frac_h2osfc`
-
-**Surface Fluxes:**
-- `qflx_ev_snow = qflx_ev_soil` (identical)
-
-**Evaporation (positive fluxes):**
-- **Bare soil**: `qflx_ev_soil` → removed via infiltration: `qflx_infl -= qflx_ev_soil`
-- **Surface water**: `qflx_ev_h2osfc` → removed from `h2osfc` with area weight `frac_h2osfc`
-
-**Condensation (negative fluxes):**
-- **Bare soil**: `qflx_dew_grnd`/`qflx_dew_snow` → **added to top soil layer** with area weight `(1 - frac_h2osfc)`  
-- **Surface water**: Negative `qflx_ev_h2osfc` → **added to `h2osfc`** with area weight `frac_h2osfc`
-
-**✅ CONSISTENT**: No double counting since `frac_sno = 0`.
-
-## Water Balance Destinations Summary
-
-| Surface Type | Evaporation Destination | Condensation Destination | Area Weight |
-|-------------|------------------------|-------------------------|-------------|
-| **Snow layers** | Snow layer water removal | Snow layer water addition (`qflx_dew_*`) | `frac_sno_eff` |
-| **Bare soil** | Infiltration reduction | Infiltration increase (negative `qflx_ev_soil`) | `(1 - frac_sno)` ⚠️ |
-| | | **OR** Direct soil addition (`qflx_dew_*`) | `(1 - frac_h2osfc)` |
-| **Surface water** | `h2osfc` removal | `h2osfc` addition (negative `qflx_ev_h2osfc`) | `frac_h2osfc` |
-
-### Key Issues Identified
-
-1. **Asymmetric dew handling**: Only `qflx_ev_snow` gets converted to explicit dew variables; other surfaces remain as negative evaporation.
-
-2. **Area weighting inconsistency**: Bare soil dew via infiltration uses `(1 - frac_sno)` instead of `(1 - frac_sno - frac_h2osfc)`, potentially including surface water areas.
-
-3. **Potential double counting**: In Case 2, the same condensation could be counted through both dew variables and negative infiltration.
-
-### Implementation Notes for Alternative Hydrology
-
-**Complete water source tracking requires:**
-
-1. **`qflx_top_soil`** (rain, snowmelt, irrigation, floods)
-2. **Snow surface dew**: `qflx_dew_grnd + qflx_dew_snow` (when snow layers exist)
-3. **Bare soil dew**: 
-   - `qflx_dew_grnd + qflx_dew_snow` (when no snow layers) with weight `(1 - frac_h2osfc)`
-   - **OR** `abs(qflx_ev_soil)` when `qflx_ev_soil < 0` with weight `(1 - frac_sno)` ⚠️
-4. **Surface water dew**: `abs(qflx_ev_h2osfc)` when `qflx_ev_h2osfc < 0` with weight `frac_h2osfc`
-
-**Recommendation**: Use the explicit dew variables (`qflx_dew_*`) when available to avoid the area weighting inconsistencies in the infiltration calculation.
-
-## File References
-
-- **Surface flux computation**: `biogeophys/BareGroundFluxesMod.F90:402-404`
-- **Surface humidity calculation**: `biogeophys/CanopyTemperatureMod.F90:308,316,322,331`
-- **Dew partitioning logic**: `biogeophys/SoilFluxesMod.F90:340-346`
-- **Dew addition to soil layers**: `biogeophys/SoilHydrologyMod.F90:1005-1006`
-- **Dew addition to snow layers**: `biogeophys/SnowHydrologyMod.F90:247,254`
-- **Soil evaporation in infiltration**: `biogeophys/SoilHydrologyMod.F90:677,679`
-- **Ground evaporation partitioning**: `biogeophys/SoilFluxesMod.F90:335-339`  
-- **Hydrological removal**: `biogeophys/SoilHydrologyMod.F90:476-477`
-- **Snow fraction logic**: `biogeophys/SoilHydrologyMod.F90:449-456`
-- **Soil beta computation**: `biogeophys/SurfaceResistanceMod.F90:148-158`
-- **Soil beta application**: `biogeophys/BareGroundFluxesMod.F90:367-371`
-- **Transpiration energy conversion example**: `biogeophys/CanopyFluxesMod.F90:1124`
-- **Variable definitions**: `ColumnDataType` for water flux and state variables
