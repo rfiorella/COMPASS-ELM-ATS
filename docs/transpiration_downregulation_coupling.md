@@ -2,7 +2,7 @@
 
 ## Summary
 
-This document describes how to implement post-energy-balance transpiration downregulation while maintaining consistent carbon fluxes in ELM's `use_cn=true` mode (excluding FATES/BeTR).
+This document describes how to implement post-energy-balance transpiration downregulation while maintaining consistent carbon fluxes in ELM's `use_cn=true` and default modes (excluding FATES/BeTR).
 
 ## Background: Carbon-Water Coupling Mechanism
 
@@ -70,36 +70,6 @@ ITERATION : do while (itlef <= itmax .and. fn > 0)
    end if
    ```
 
-3. **Water limitation enforcement** (`CanopyFluxesMod.F90:1118-1124`):
-   ```fortran
-   if (qflx_tran_veg(p) > avail_pft(p)) then
-      qflx_tran_veg(p) = avail_pft(p)
-      qflx_deficit(p) = (efpot*rppdry - qflx_tran_veg(p))
-      erre = htvp(c)*(efpot*rppdry - qflx_tran_veg(p))
-      efsh = efsh + erre    ! Convert excess latent heat to sensible heat
-   end if
-   ```
-
-### Water Deficit Handling
-
-Water deficits are handled through aquifer water in the soil hydrology routines for normal vegetated columns:
-
-**Reference**: `biogeophys/SoilWaterMovementMod.F90:163-187` (water deficit correction loop)
-```fortran
-do fc = 1, num_hydrologyc
-   c = filter_hydrologyc(fc)
-   j = nlev2bed(c)
-   if (h2osoi_liq(c,j) < watmin) then
-      xs(c) = watmin-h2osoi_liq(c,j)
-   else
-      xs(c) = 0._r8
-   end if
-   wa(c) = wa(c) - xs(c)  ! Reduce aquifer water
-end do
-```
-
-Note: `filter_hydrologyc` includes soil columns (`istsoil`), crop columns (`istcrop`), and pervious road columns (`icol_road_perv`) as defined in `main/filterMod.F90:396-397`.
-
 ## ELM Driver Timing Sequence
 
 The critical timing in `main/elm_driver.F90` for carbon allocation vs. soil hydrology:
@@ -162,41 +132,6 @@ call HydrologyDrainage(bounds_clump, &
 - **After line 792**: `CanopyFluxes` has computed initial photosynthesis with standard soil water stress
 - **Before line 1048**: `EcosystemDynNoLeaching1` allocates carbon to biomass pools
 
-### Code Blocks to Reproduce
-
-To implement transpiration downregulation with consistent carbon fluxes, the following code blocks must be reproduced:
-
-#### 1. Ball-Berry Parameter Update
-**Location**: `biogeophys/PhotosynthesisMod.F90:521-522`
-```fortran
-bbb(p) = max (bbbopt(p)*btran_modified(p), 1._r8)
-mbb(p) = mbbopt(p)
-```
-
-#### 2. Photosynthesis Recalculation for Sunlit Leaves
-**Location**: `biogeophys/CanopyFluxesMod.F90:921-925`
-```fortran
-call Photosynthesis (bounds, fn, filterp, &
-     svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran_modified(begp:endp), &
-     dayl_factor(begp:endp), atm2lnd_vars, surfalb_vars, solarabs_vars, &
-     canopystate_vars, photosyns_vars, 'sun')
-```
-
-#### 3. Photosynthesis Recalculation for Shaded Leaves
-**Location**: `biogeophys/CanopyFluxesMod.F90:943-947`
-```fortran
-call Photosynthesis (bounds, fn, filterp, &
-     svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran_modified(begp:endp), &
-     dayl_factor(begp:endp), atm2lnd_vars, surfalb_vars, solarabs_vars, &
-     canopystate_vars, photosyns_vars, 'sha')
-```
-
-#### 4. Photosynthesis Totaling
-**Location**: `biogeophys/CanopyFluxesMod.F90:1313-1314`
-```fortran
-call PhotosynthesisTotal(fn, filterp, &
-     atm2lnd_vars, cnstate_vars, canopystate_vars, photosyns_vars)
-```
 
 ### What Changes When `btran` is Modified
 
@@ -236,20 +171,3 @@ Additionally, stomatal resistance values (`rssun`, `rssha`) are automatically up
 Since the energy balance has already converged in `CanopyFluxes`, you may need to:
 - Convert excess latent heat to sensible heat if transpiration is further reduced
 - Ensure leaf temperature remains consistent with the converged energy balance
-
-**Reference**: `biogeophys/CanopyFluxesMod.F90:1124`
-```fortran
-efsh = efsh + erre    ! Convert excess latent heat to sensible heat
-```
-
-## Key Files and Locations
-
-- **Driver sequence**: `main/elm_driver.F90:788-1252`
-- **Stomatal conductance**: `biogeophys/PhotosynthesisMod.F90:521, 1564-1567`
-- **Photosynthesis**: `biogeophys/PhotosynthesisMod.F90:921-947`
-- **Transpiration**: `biogeophys/CanopyFluxesMod.F90:1011-1024`
-- **Water stress**: `biogeophys/SoilMoistStressMod.F90:391`
-- **Water deficit handling**: `biogeophys/SoilWaterMovementMod.F90:163-187`
-- **Column filters**: `main/filterMod.F90:396-397`
-
-This approach ensures that both water fluxes and carbon allocation are consistent with your enhanced water limitation while maintaining the fundamental physiological coupling between carbon and water cycles through the stomatal conductance mechanism.
