@@ -1,8 +1,8 @@
 # adds E3SM to container with ATS already compiled,
 # provides backbone for e3sm testing
 
-#FROM metsi/ats:master-latest
-FROM metsi/ats:latest
+FROM metsi/ats:elm_ats-latest
+#FROM metsi/ats:latest
 
 
 ARG https_proxy=
@@ -21,8 +21,8 @@ RUN mkdir /home/amanzi_user/.cime \
 ENV https_proxy= \
     http_proxy=
 
-# Copy E3SM into container
-ADD --chown="amanzi_user:amanzi_user" E3SM /home/amanzi_user/E3SM
+# Copy some things into container
+# NOW E3SM mounted as a volume from submodule on CI (and from local copy locally)
 COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
 COPY cime_files/* /.cime/
 ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
@@ -68,11 +68,12 @@ ENV USER=amanzi_user \
     HDF5_HOME=/home/amanzi_user/install/tpls \
     HDF5_PATH=/home/amanzi_user/install/tpls 
 
-RUN cd /home/amanzi_user/install/lib \
-    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake  
-
 WORKDIR /home/amanzi_user
 
+RUN cd /home/amanzi_user/install/lib \
+    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake \
+    && git config --global user.email "elmats@dev.null" \
+    && git config --global user.name "ELM-ATS Developer"
 
 # ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
 
