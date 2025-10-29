@@ -291,6 +291,7 @@
         <Parameter name="evaluator type" type="string" value="column sum evaluator"/>
         <Parameter name="summed key suffix" type="string" value="transpiration"/>
       </ParameterList>
+
       <ParameterList name="surface-evaporation" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="evaporation downregulation, soil resistance"/>
       </ParameterList>
@@ -337,6 +338,48 @@
         <Parameter name="debug cells" type="Array(int)" value="{0}"/>
       </ParameterList>
 
+      <!-- this becomes runoff generation qflx_surf in ELM, divide by both surface area and density to get m per second -->
+      <!-- positive is outward -->
+      <ParameterList name="surface-runoff_generation_mps" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="multiplicative reciprocal"/>
+        <Parameter name="multiplicative dependency keys" type="Array(string)" value="{surface-runoff_generation}"/>
+        <Parameter name="reciprocal dependency keys" type="Array(string)" value="{surface-molar_density_liquid, surface-cell_volume}"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0}"/>
+      </ParameterList>
+
+      <!-- divergence of q_surf in mols per second -->
+      <ParameterList name="surface-runoff_generation" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="flux divergence"/>
+      </ParameterList>
+
+      <!-- this becomes baseflow in ELM, divide by both surface area and molar density to get m per second-->
+      <!-- positive is outward -->
+      <ParameterList name="surface-baseflow_mps" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="multiplicative reciprocal"/>
+        <Parameter name="multiplicative dependency keys" type="Array(string)" value="{surface-baseflow}"/>
+        <Parameter name="reciprocal dependency keys" type="Array(string)" value="{surface-molar_density_liquid, surface-cell_volume}"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0}"/>
+      </ParameterList>
+
+      <!-- must subtract off exfiltration (positive out) as that is not baseflow, in mols per second -->
+      <ParameterList name="surface-baseflow" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="additive evaluator"/>
+        <Parameter name="dependencies" type="Array(string)" value="{surface-column_total_flux_divergence, surface-surface_subsurface_flux}"/>
+        <Parameter name="surface-surface_subsurface_flux coefficient" type="double" value="-1"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0}"/>
+      </ParameterList>
+
+      <!-- just sum up divergence of fluxes to get column total divergence in mol per second -->
+      <ParameterList name="surface-column_total_flux_divergence" type="ParameterList">
+        <!-- no options for divide by density, volume averaged, or include vol factor -->
+        <Parameter name="evaluator type" type="string" value="column sum evaluator"/>
+        <Parameter name="summed key" type="string" value="water_flux_divergence"/>
+      </ParameterList>
+      
+      <ParameterList name="water_flux_divergence" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="flux divergence"/>
+      </ParameterList>
+      
       <ParameterList name="capillary_pressure_gas_liq" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="capillary pressure, atmospheric gas over liquid"/>
       </ParameterList>

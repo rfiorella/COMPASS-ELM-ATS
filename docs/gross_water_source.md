@@ -68,7 +68,15 @@ qflx_top_soil(c) = qflx_top_soil(c) + qflx_from_uphill(c)
 
 ## 5. Dew
 
+In most cases, dew is included as negative evaporation.
+
 In one very specific case, dew **IS NOT** included in evaporation.
 See evaporation_computation section on "Add back in dew".  In other
 cases and ground surface fractions, dew **IS** included as negative
 evaporation.
+
+So we choose to **NOT** consider dew in this calculation.
+
+## Summary
+
+In summary, it appears that all needed fluxes are included in `col_wf%qflx_top_soil`.
