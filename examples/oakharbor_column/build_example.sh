@@ -30,15 +30,21 @@ echo ""
 echo "Setting up case input"
 echo "----------------------"
 if [ "${GITHUB_ACTIONS}" = "TRUE" ]; then
-  echo "finding oakharbor_column example directory..."
-  echo "PATH is $(find / -path '*/examples/oakharbor_column')"
-  cp $(find / -path '*/examples/oakharbor_column')/* ${CASE_DIR}
+  echo "finding ${RUN_NAME} example directory..."
+  echo "PATH is $(find / -path '*/examples/${RUN_NAME}')"
+  cp $(find / -path '*/examples/${RUN_NAME}')/* ${CASE_DIR}
 else
   cp ./* ${CASE_DIR}
 fi
 cd ${CASE_DIR}
-sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.xml
 
+# ATS only
+sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.xml
+echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
+echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
+# END ATS only
+
+# ELM
 ./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${E3SM_WORK_DIR}/inputdata
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
@@ -57,11 +63,6 @@ sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.x
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
 ./xmlchange DEBUG=TRUE
-
-# set up the user_nl_elm file prior to setup
-# generic part!
-echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
-echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
 
 cat user_nl_elm
 
