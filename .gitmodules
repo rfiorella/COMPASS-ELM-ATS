@@ -5,4 +5,4 @@
 [submodule "amanzi"]
 	path = amanzi
 	url = git@github.com:amanzi/amanzi
-  branch = elm_ats
+        branch = elm_ats
