@@ -20,9 +20,9 @@ export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${ELM_ATS_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${ELM_ATS_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""
@@ -59,7 +59,7 @@ echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
 
 # if DEBUG is true, write out every time step
 if [ DEBUG ]; then
-  echo " hist_nhtfrqi = 1" >> user_nl_elm
+  echo " hist_nhtfrq = 1" >> user_nl_elm
 fi
   
 cat user_nl_elm
