@@ -167,7 +167,7 @@
           <Parameter name="backtrack lag" type="int" value="0"/>
           <Parameter name="backtrack factor" type="double" value="0.5"/>
           <Parameter name="backtrack tolerance" type="double" value="0.0001"/>
-          <Parameter name="nonlinear tolerance" type="double" value="1e-5"/>
+          <Parameter name="nonlinear tolerance" type="double" value="1e-8"/>
           <Parameter name="diverged tolerance" type="double" value="10000000000.0"/>
           <Parameter name="limit iterations" type="int" value="100"/>
         </ParameterList>
@@ -264,15 +264,21 @@
       <ParameterList name="surface-potential_transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="multiplicative evaluator"/>
         <Parameter name="dependencies" type="Array(string)" value="{surface-potential_transpiration_mps, surface-molar_density_liquid}"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0}"/>
       </ParameterList>  
 
       <ParameterList name="transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="transpiration distribution, relative permeability"/>
         <Parameter name="potential transpiration key" type="string" value="surface-potential_transpiration"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0,10}"/>
       </ParameterList>
+
       <ParameterList name="surface-total_transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="column sum evaluator"/>
         <Parameter name="summed key suffix" type="string" value="transpiration"/>
+        <Parameter name="include volume to surface area factor" type="bool" value="true"/>
+        <Parameter name="divide by density" type="bool" value="true"/>
+        <Parameter name="debug cells" type="Array(int)" value="{0}"/>
       </ParameterList>
 
       <!-- <ParameterList name="surface-evaporation" type="ParameterList"> -->
@@ -380,17 +386,17 @@
 
       <ParameterList name="surface-source_molar_density" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="independent variable constant"/>
-        <Parameter name="value" type="double" value="55389.0"/>
+        <Parameter name="value" type="double" value="55508.37343813314"/>
       </ParameterList>
 
       <ParameterList name="surface-molar_density_liquid" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="independent variable constant"/>
-        <Parameter name="value" type="double" value="55389.0"/>
+        <Parameter name="value" type="double" value="55508.37343813314"/>
       </ParameterList>
 
       <ParameterList name="molar_density_liquid" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="independent variable constant"/>
-        <Parameter name="value" type="double" value="55389.0"/>
+        <Parameter name="value" type="double" value="55508.37343813314"/>
       </ParameterList>
       
       <ParameterList name="viscosity_liquid" type="ParameterList">
