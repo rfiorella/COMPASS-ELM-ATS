@@ -16,13 +16,14 @@ export RUN_NAME="oakharbor_bare_column"
 export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
+export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${ELM_ATS_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${E3SM_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${ELM_ATS_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${E3SM_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""

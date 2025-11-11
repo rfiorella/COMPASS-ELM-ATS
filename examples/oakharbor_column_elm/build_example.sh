@@ -7,8 +7,9 @@ set -e
 if [ -z "${E3SM_WORK_DIR+x}" ]; then
     export E3SM_WORK_DIR=/home/e3smuser
 fi
+# this should be the folder that contains ./E3SM.
 if [ -z "${ELM_ATS_SRC_DIR+x}" ]; then
-    export ELM_ATS_SRC_DIR=/home/e3smuser/E3SM
+    export ELM_ATS_SRC_DIR=/home/e3smuser/compass
 fi
 
 # set up local variables
@@ -17,6 +18,7 @@ export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=FALSE
+export E3SM_SRC_DIR=${ELM_ATS_SRC_DIR}/E3SM
 
 # create the case
 echo "Creating case"
