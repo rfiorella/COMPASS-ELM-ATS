@@ -14,7 +14,7 @@
  metdata_bypass = '$DIN_LOC_ROOT/atm/datm7/atm_forcing.simple_sand_column'
 
  fsurdat = '$DIN_LOC_ROOT/lnd/clm2/surfdata_map/sand_column.nc'
- aero_file = '$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_monthly_1850_mean_1.9x2.5_c090803.nc'
+ aero_file = '$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_monthly_1850_mean_1.9x2.5_c090421.nc'
  CO2_file = '$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_1765-2007_c100614.nc'
 
  nyears_ad_carbon_only = 0
