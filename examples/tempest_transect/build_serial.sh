@@ -9,13 +9,14 @@ export INPUTDATA_NAME="110x1pt_US-GC_TransTEMPEST"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=TRUE
+export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""
