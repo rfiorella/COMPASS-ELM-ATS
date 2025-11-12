@@ -5,15 +5,15 @@ set -e
 set DEBUG=TRUE
 
 if [ -z "${E3SM_WORK_DIR+x}" ]; then
-    export E3SM_WORK_DIR=/home/e3smuser
+    export E3SM_WORK_DIR=/home/amanzi_user
 fi
 if [ -z "${ELM_ATS_SRC_DIR+x}" ]; then
-    export ELM_ATS_SRC_DIR=/home/e3smuser/E3SM
+    export ELM_ATS_SRC_DIR=/home/amanzi_user/compass/E3SM
 fi
 
 # set up local variables
-export RUN_NAME="oakharbor_bare_column"
-export INPUTDATA_NAME="1x1pt_Oakharbor"
+export RUN_NAME="sand_column"
+export INPUTDATA_NAME="sand_column"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
 export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
@@ -21,9 +21,9 @@ export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${E3SM_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${E3SM_SRC_DIR}/E3SM/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""
@@ -41,14 +41,14 @@ sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.x
 ./xmlchange LND_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
 
 # these are now example specific
-./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
-./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
+./xmlchange ATM_DOMAIN_FILE=domain.lnd.sand_column.nc
+./xmlchange LND_DOMAIN_FILE=domain.lnd.sand_column.nc
 
 ./xmlchange NTASKS=1
 ./xmlchange NTASKS_PER_INST=1
 ./xmlchange PIO_TYPENAME=netcdf
 ./xmlchange RUN_STARTDATE=2000-07-15
-./xmlchange STOP_OPTION=nyears,STOP_N=2
+./xmlchange STOP_OPTION=nyears,STOP_N=1
 ./xmlchange BATCH_SYSTEM=none
 #./xmlchange HIST_N=1
 ./xmlchange DEBUG=TRUE
@@ -60,7 +60,7 @@ echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
 
 # if DEBUG is true, write out every time step
 if [ DEBUG ]; then
-  echo " hist_nhtfrqi = 1" >> user_nl_elm
+  echo " hist_nhtfrq = 1" >> user_nl_elm
 fi
   
 cat user_nl_elm

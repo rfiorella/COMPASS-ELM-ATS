@@ -11,9 +11,9 @@
  do_budgets = .false.
  use_nofire = .true.
  metdata_type = 'gswp3'
- metdata_bypass = '$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_US-GC03-GRID/cpl_bypass_full'
+ metdata_bypass = '$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_Oakharbor-Grid/cpl_bypass_full'
 
- fsurdat = '$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_110x1pt_US-GC_TransTEMPEST_c20230901.nc'
+ fsurdat = '$DIN_LOC_ROOT/lnd/clm2/surfdata_map/5x1pt_Oakharbor-GRID_simyr1850_c360x720_c20230522.nc'
  aero_file = '$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_monthly_1850_mean_1.9x2.5_c090421.nc'
  CO2_file = '$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_1765-2007_c100614.nc'
 
@@ -25,7 +25,7 @@
 
  hist_empty_htapes = .true.
  hist_nhtfrq = -24
- hist_fincl1 = 'TBOT', 'PBOT','RH','RAIN','SNOW', 'TLAI', 'ZWT', 'SMP', 'SOILLIQ', 'SOILICE'
+ hist_fincl1 = 'TBOT', 'PBOT','RH','RAIN','SNOW', 'TLAI', 'ZWT', 'SMP', 'SOILLIQ', 'SOILICE','SOIL_PRESSURE'
  hist_mfilt = 1
 
  use_ats = .true.

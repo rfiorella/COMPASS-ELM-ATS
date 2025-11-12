@@ -49,13 +49,13 @@ echo ""
 # MPI_FLAVOR=openmpi
 MPI_FLAVOR=mpich
 
-docker build --build-arg ats_branch=master \
+docker build --pull --build-arg ats_branch=master \
 	--build-arg ats_tests_branch=master \
 	--build-arg amanzi_branch=${AMANZI_BRANCH} \
 	--build-arg amanzi_tpls_ver=${AMANZI_TPLS_VER} \
 	--build-arg mpi_flavor=${MPI_FLAVOR} \
 	--progress=plain \
-        --no-cache \
+    --no-cache \
 	-f Dockerfile-ATS-ELM \
 	-t metsi/ats:elm_api ../
 

@@ -17,6 +17,7 @@ export INPUTDATA_NAME="1x1pt_Oakharbor"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=FALSE
+export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 
 # create the case
 echo "Creating case"
