@@ -1,7 +1,7 @@
 # adds E3SM to container with ATS already compiled,
 # provides backbone for e3sm testing
 
-FROM metsi/ats:elm_ats-latest
+FROM metsi/ats:elm_ats-arm64-latest
 #FROM metsi/ats:latest
 
 

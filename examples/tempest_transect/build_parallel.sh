@@ -9,13 +9,14 @@ export INPUTDATA_NAME="110x1pt_US-GC_TransTEMPEST"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=TRUE
+export E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 
 # create the case
 echo "Creating case"
 echo "----------------------"
-echo "${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
+echo "${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}"
 echo "----------------------"
-${ELM_ATS_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
+${E3SM_SRC_DIR}/cime/scripts/create_newcase --case ${CASE_DIR} --res ELM_USRDAT --mach ${MACHINE_NAME} --compiler ${COMPILER_NAME} --compset ${COMPSET}
 
 # cp over example files to the case directory
 echo ""
@@ -40,18 +41,18 @@ sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.x
 ./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}_c20230901.nc
 ./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}_c20230901.nc
 
-./xmlchange NTASKS=4
-./xmlchange NTASKS_PER_INST=4
+./xmlchange NTASKS=8
+./xmlchange NTASKS_PER_INST=8
 ./xmlchange PIO_TYPENAME=netcdf
 ./xmlchange RUN_STARTDATE=2000-07-15
-./xmlchange STOP_OPTION=nmonths,STOP_N=2
+./xmlchange STOP_OPTION=ndays,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
 ./xmlchange DEBUG=TRUE
 
 # set up the user_nl_elm file prior to setup
 # generic part!
-echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
-echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
+#echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
+#echo " ats_inputfile = '${RUN_NAME}.xml'" >> user_nl_elm
 
 cat user_nl_elm
 
