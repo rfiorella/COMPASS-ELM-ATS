@@ -16,9 +16,6 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GHA_PAT }}
-      - name: Checkout amanzi repository
-        run: |
-          git clone https://github.com/amanzi/amanzi
       - name: Extract the branch name
         id: branch
         working-directory: amanzi
