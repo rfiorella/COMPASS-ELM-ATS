@@ -52,7 +52,7 @@ To build locally on a Mac or Linux machine, follow the following steps.
    - libcurl-dev: `sudo apt-get install libcurl4-gnutls-dev`
    
 2) `git clone --recurse-submodules git@github.com:amanzi/COMPASS-ELM-ATS ${ELM_ATS_SRC_DIR}`
-3) `git clone git@github.com:rfiorella/pt-e3sm-inputdata ${E3SM_WORK_DIR}/inputdata`  Unpack the inputdata files: `cd ${E3SM_WORK_DIR}/inputdata; . unpack.sh`
+3) `git clone -b compass-glm git@github.com:rfiorella/pt-e3sm-inputdata ${E3SM_WORK_DIR}/inputdata`  Unpack the inputdata files: `cd ${E3SM_WORK_DIR}/inputdata; . unpack.sh`
 4) Build Amanzi TPLs as normal (using bootstrap).
 5) Build ATS using `--enable-elm_ats_api` in bootstrap.
 6) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
