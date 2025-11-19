@@ -1,7 +1,7 @@
 # adds E3SM to container with ATS already compiled,
 # provides backbone for e3sm testing
 
-FROM metsi/ats:elm_ats-latest
+FROM metsi/ats:elm_ats-arm64-latest
 #FROM metsi/ats:latest
 
 
@@ -45,19 +45,6 @@ RUN apt-get -q update -y && apt-get install -y \
     && mkdir -p work/output \
     && chown -R amanzi_user:amanzi_user work
 
-# get and unpack input data
-RUN cd /home/amanzi_user/work \
-    && git clone --depth 1 -b compass-glm https://github.com/rfiorella/pt-e3sm-inputdata inputdata \
-    && cd inputdata \
-    && ./unpack.sh \
-    # trim excess data not used in CI or COMPASS
-    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/CLM1PT_data \
-    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid \
-    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_42FLUXNETSITES \
-    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/GSWP3_daymet \
-    && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/Daymet_ERA5 \
-    && rm -rfv /home/amanzi_user/work/inputdata/.git 
-
 #USER amanzi_user
 ENV USER=amanzi_user \
     CIMEROOT=home/amanzi_user/E3SM/cime \
@@ -74,17 +61,3 @@ RUN cd /home/amanzi_user/install/lib \
     && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake \
     && git config --global user.email "elmats@dev.null" \
     && git config --global user.name "ELM-ATS Developer"
-
-# ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
-
-#  RUN cd /home/amanzi_user/E3SM/cime/scripts \
-#      && ./create_newcase --case ${CASE_NAME} --res f19_g16 --compset IGSWELMBGC --mach docker-ats --compiler gnu \
-#      && cd ${CASE_NAME} \
-#      && ./xmlchange DATM_CLMNCEP_YR_END=1995 \
-#      && ./xmlchange PIO_TYPENAME=netcdf \
-#      && ./xmlchange RUNDIR=${PWD}/run \
-#      && ./xmlchange EXEROOT=${PWD}/bld \
-#      && ./xmlchange NTASKS=1 \
-#      && ./xmlchange DIN_LOC_ROOT=$PWD \
-#      && ./case.setup
-# #      && ./case.build
