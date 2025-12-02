@@ -61,8 +61,8 @@ To build locally on a Mac or Linux machine, follow the following steps.
 6) FIX amanzi/amanzi#886 --- but until then, hack `$AMANZI_DIR/lib/AmanziImportedTargets.cmake` to protect the netcdf section with: `IF (NOT TARGET netcdf) ... ENDIF`
 7) (optional) If building on a machine not supported by E3SM, you'll need to update cmake files for E3SM. Examples are provided in cime_files in this repo for how these were configured for the docker machine. Typically they get placed in ~/.cime or /.cime if they are not part of the E3SM repo (in the container, they are in both locations).
   - `mkdir ~/.cime`
-  - `cp COMPASS-ELM-ATS/cime_files/config_machines.xml ~/.cime`
-  - `cp COMPASS-ELM-ATS/gnu_docker-ats.cmake ~/.cime/${COMPILER_NAME}_${MACHINE_NAME}.cmake`
+  - `cp ${ELM_ATS_SRC_DIR}/cime_files/config_machines.xml ~/.cime`
+  - `cp ${ELM_ATS_SRC_DIR}/cime_files/gnu_docker-ats.cmake ~/.cime/${COMPILER_NAME}_${MACHINE_NAME}.cmake`
   - edit `~/.cime/config_machines.xml`, adding an entry for `$MACHINE_NAME` based on one of the existing machines.
  
 
@@ -71,6 +71,27 @@ To build locally on a Mac or Linux machine, follow the following steps.
 Follow the examples:
 
 0) `cd ${ELM_ATS_SRC_DIR}/examples/EXAMPLE_NAME`
-1) Run the enclosed script `./build_example.sh` which creates the new case and calls case.setup and case.build.
+1) Run the enclosed script `./build_example.sh` which creates the new case and calls case.setup and case.build.  Pass the USE_ATS flag to get the variation you want:
+  - `USE_ATS=FALSE ./build_example.sh` Runs native ELM
+  - `USE_ATS=IC_ONLY ./build_example.sh` Runs native ELM but with ATS's iniitial condition for easier comparison
+  - `USE_ATS=TRUE ./build_example.sh` Runs ELM + ATS
 2) Follow the on-screen instructions to run the case: `cd ${CASE_DIR} && ./case.submit`
 
+# Examples
+
+This documents and describes the sequence of examples developed in this repo.
+
+## Column Examples
+
+0. `oakharbor_column` The default Oak Harbor column -- 1 column only.  (runs, untested)
+1. `oakharbor_bare_column` Same as 0, but with bare ground PFT, not a plant-based PFT.  (runs, untested)
+2. `idealized_sand_column` Same as 0, but with pure sand? (different WRM?)  (runs on non-ATS, untested)
+
+## Transect Examples
+
+1. `oakharbor_transect` ??
+2. `tempest_transect` ??
+
+## 3D Examples
+
+1. WIP coweeta?

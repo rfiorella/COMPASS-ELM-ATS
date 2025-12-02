@@ -2,30 +2,21 @@
 # provides backbone for e3sm testing
 
 FROM metsi/ats:elm_ats-latest
-#FROM metsi/ats:latest
-
 
 ARG https_proxy=
 ARG http_proxy=
 
-# Set path to make it easier to run amanzi
-ENV PATH=/home/amanzi_user/install/bin:${PATH}
-RUN echo $PATH
 USER root
 
-# Add cime directory
-RUN mkdir /home/amanzi_user/.cime \
-    && mkdir /.cime/
-
-# Unset proxy
+# LANL stuff -- unset proxy
 ENV https_proxy= \
     http_proxy=
+# end LANL stuff
 
-# Copy some things into container
-# NOW E3SM mounted as a volume from submodule on CI (and from local copy locally)
-COPY --chown="amanzi_user:amanzi_user" cime_files/* /home/amanzi_user/.cime/
-COPY cime_files/* /.cime/
-ADD --chown="amanzi_user:amanzi_user" scripts/ /home/amanzi_user/scripts
+# ORNL stuff -- corporate certificates
+COPY Docker/ca.crt /usr/local/share/ca-certificates/corp-ca.crt
+RUN update-ca-certificates
+# end ORNL stuff
 
 # add libxml, perl interface for CIME
 RUN apt-get -q update -y && apt-get install -y \
@@ -35,15 +26,22 @@ RUN apt-get -q update -y && apt-get install -y \
     libxml-libxml-perl \
     subversion \
     csh \
-    && apt-get clean all \
-    && mv /bin/sh /bin/sh.orig \
-    && ln -s /bin/bash /bin/sh \
-    # need to make each of these directories explicitly because RUN uses
-    # /bin/sh and so brace expansion is not available:
-    && cd /home/amanzi_user \
-    && mkdir -p work/cases \
-    && mkdir -p work/output \
-    && chown -R amanzi_user:amanzi_user work
+    && apt-get clean all
+
+USER amanzi_user
+WORKDIR /home/amanzi_user
+
+# fix the Amanzi installation
+RUN cd /home/amanzi_user/install/lib \
+    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake
+
+# Add cime directory and files
+RUN mkdir -p /home/amanzi_user/.cime
+COPY cime_files/* /home/amanzi_user/.cime/
+
+# make work, case, output directories
+RUN mkdir -p work/cases \
+    && mkdir -p work/output
 
 # get and unpack input data
 RUN cd /home/amanzi_user/work \
@@ -58,33 +56,19 @@ RUN cd /home/amanzi_user/work \
     && rm -rfv /home/amanzi_user/work/inputdata/atm/datm7/Daymet_ERA5 \
     && rm -rfv /home/amanzi_user/work/inputdata/.git 
 
-#USER amanzi_user
-ENV USER=amanzi_user \
-    CIMEROOT=home/amanzi_user/E3SM/cime \
+# git must be configured for E3SM
+RUN git config --global user.email "elmats@dev.null" \
+    && git config --global user.name "ELM-ATS Developer"
+
+# set up the environment
+ENV CIMEROOT=home/amanzi_user/E3SM/cime \
     PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib \
     CIME_MODEL=e3sm \
+    AMANZI_DIR=/home/amanzi_user/install/ \
     ATS_DIR=/home/amanzi_user/install/ \
     NETCDF_PATH=/home/amanzi_user/install/tpls \
     HDF5_HOME=/home/amanzi_user/install/tpls \
     HDF5_PATH=/home/amanzi_user/install/tpls 
 
-WORKDIR /home/amanzi_user
 
-RUN cd /home/amanzi_user/install/lib \
-    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake \
-    && git config --global user.email "elmats@dev.null" \
-    && git config --global user.name "ELM-ATS Developer"
 
-# ENV CASE_NAME=/home/amanzi_user/work/output/f19_g16.IGSWELMBGC \
-
-#  RUN cd /home/amanzi_user/E3SM/cime/scripts \
-#      && ./create_newcase --case ${CASE_NAME} --res f19_g16 --compset IGSWELMBGC --mach docker-ats --compiler gnu \
-#      && cd ${CASE_NAME} \
-#      && ./xmlchange DATM_CLMNCEP_YR_END=1995 \
-#      && ./xmlchange PIO_TYPENAME=netcdf \
-#      && ./xmlchange RUNDIR=${PWD}/run \
-#      && ./xmlchange EXEROOT=${PWD}/bld \
-#      && ./xmlchange NTASKS=1 \
-#      && ./xmlchange DIN_LOC_ROOT=$PWD \
-#      && ./case.setup
-# #      && ./case.build

@@ -16,7 +16,7 @@ get_tpl_version()
 }
 
 AMANZI_BRANCH=master
-AMANZI_SOURCE_DIR=/code/amanzi
+AMANZI_SOURCE_DIR=${ELM_ATS_SRC_DIR}/amanzi
 AMANZI_TPLS_VER=`get_tpl_version`
 
 ATS_SOURCE_DIR=$AMANZI_SOURCE_DIR/src/physics/ats
@@ -44,19 +44,6 @@ echo " - global hash      $ATS_GIT_GLOBAL_HASH"
 echo " - version string   $ATS_VER"
 echo ""
 
-# MPI installed in the Docker image
-# Options: openmpi, mpich
-# MPI_FLAVOR=openmpi
-MPI_FLAVOR=mpich
-
-docker build --pull --build-arg ats_branch=master \
-	--build-arg ats_tests_branch=master \
-	--build-arg amanzi_branch=${AMANZI_BRANCH} \
-	--build-arg amanzi_tpls_ver=${AMANZI_TPLS_VER} \
-	--build-arg mpi_flavor=${MPI_FLAVOR} \
-	--progress=plain \
-    --no-cache \
-	-f Dockerfile-ATS-ELM \
-	-t metsi/ats:elm_api ../
+docker build --pull --progress=plain --no-cache -f Dockerfile-ATS-ELM -t metsi/ats:elm_api ../
 
 

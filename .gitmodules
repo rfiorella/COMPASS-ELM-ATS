@@ -6,7 +6,3 @@
 	path = amanzi
 	url = git@github.com:amanzi/amanzi
         branch = elm_ats
-[submodule "inputdata"]
-	path = inputdata
-	url = git@github.com:rfiorella/pt-e3sm-inputdata
-	branch = compass-glm
