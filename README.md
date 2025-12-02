@@ -6,23 +6,25 @@ ELM-ATS should build from the head of ATS master branch, and against
 the E3SM commit in the linked submodule. Two options to test/build the stack:
 
 ## Docker
-~~The image created by CI works now! So: `docker run -it metsi/compass-elm-ats:latest` and then can follow the general workflow in the ci.yml file to setup and build the case.~~ Current debugging progress:
+~~The image created by CI works now! So: `docker run -it metsi/compass-elm-ats:latest` and then can follow the general workflow in the ci.yml file to setup and build the case.~~ 
 
-Steps if using docker but not the CI image (e.g., Apple Silicon):
+Steps if using docker but not the CI image (e.g., Apple Silicon).  Note that this uses the CI-built ATS, so if you change ATS, that must get pushed to e.g. elm_ats branch and rebuilt there.
 
-1) Clone this repo, then cd Docker; ./deploy-ats-elm-docker.sh
-2) from top level repo directory: docker run -it -e E3SM_WORK_DIR=/home/amanzi_user/work -e ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM -e MACHINE_NAME=docker-ats -e COMPILER_NAME=gnu -v $(pwd):/home/amanzi_user/compass -e HOME=/home/amanzi_user metsi/ats:elm_api (or, whatever tag was specified in deploy script from a)
-3) . scripts/get_inputdata.x
-4) . inputdata/unpack.sh
-5) cd compass/examples
-6) odd thing in E3SM currently seems to require that git config user.name and user.email are set. I have 
-just been manually setting these at this point:
+1) Clone this repo, then `cd Docker; ./deploy-ats-elm-docker.sh`
+2) Then, from the top level repo directory: 
+```
+docker run -it --user=amanzi_user -e E3SM_WORK_DIR=/home/amanzi_user/work -e ELM_ATS_SRC_DIR=/home/amanzi_user/compass -e MACHINE_NAME=docker-ats -e COMPILER_NAME=gnu -v $(pwd):/home/amanzi_user/compass metsi/ats:elm_api 
+```
+(or, whatever tag was specified in deploy script from step 1.)
+
+3) `cd compass/examples`
+4) E3SM currently seems to require that git config user.name and user.email are set:
 ```
 git config --global user.name "tester"
 git config --global user.email "test@dev.null"
 ```
-7) Oak Harbor ELM only test - worked for me as of 9/23/25
-8) Oak Harbor ELM-ATS test - 
+5) Oak Harbor ELM only test - worked for me as of 9/23/25
+6) Oak Harbor ELM-ATS test - 
 
 Common issues:
 - NC_FillValue errors in build log - `$ELM_ATS_SRC_DIR` is pointing to out-of-date E3SM version.
