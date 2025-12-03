@@ -26,6 +26,7 @@
 # exit on error
 set -e
 set DEBUG=TRUE
+shopt -s nullglob
 
 # process directory structure
 if [ -z "${ELM_ATS_SRC_DIR}" ]; then
@@ -139,18 +140,23 @@ fi
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
 
-# these are now example specific
+# try to find the domain.nc file: these are now example specific
 if [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
-    ./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
-    ./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
-elif [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc ]; then 
-    ./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
-    ./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
+    DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
 else
-    echo "Cannot find domain files for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
-    exit 1
+    matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
+    if (( ${#matches[@]} == 1 )); then
+        file="${matches[0]}"
+        DOMAIN_FILE="${file##*/}"
+    else
+        echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+        exit 1
+    fi        
 fi
+./xmlchange ATM_DOMAIN_FILE=${DOMAIN_FILE}
+./xmlchange LND_DOMAIN_FILE=${DOMAIN_FILE}
 
+# set the number of tasks
 if [ ! -v NTASKS ]; then
     NTASKS=1
 fi

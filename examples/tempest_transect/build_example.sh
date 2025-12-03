@@ -4,16 +4,15 @@ if [ -z "${USE_ATS}" ]; then
     exit 1
 fi
 
+
 if [ ! -v NTASKS ]; then
     echo "Setting NTASKS = 1"
     NTASKS=1
 fi
 
-
 NTASKS=${NTASKS} \
-      CASE_NAME=oakharbor_transect_np${NTASKS} \
-      ATS_CASE_NAME=oakharbor_transect \
-      INPUTDATA_NAME=5x1pt_Oakharbor \
-      DOMAIN_NAME=oakharbor_transect \
+      CASE_NAME=tempest_transect.np${NTASKS} \
+      ATS_CASE_NAME=tempest_transect \
+      INPUTDATA_NAME="110x1pt_US-GC_TransTEMPEST" \
+      DOMAIN_NAME=tempest_transect \
       ../build_example.sh
-
