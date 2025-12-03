@@ -68,7 +68,8 @@ ENV CIMEROOT=home/amanzi_user/E3SM/cime \
     ATS_DIR=/home/amanzi_user/install/ \
     NETCDF_PATH=/home/amanzi_user/install/tpls \
     HDF5_HOME=/home/amanzi_user/install/tpls \
-    HDF5_PATH=/home/amanzi_user/install/tpls 
+    HDF5_PATH=/home/amanzi_user/install/tpls \
+    USER=amanzi_user
 
 
 
