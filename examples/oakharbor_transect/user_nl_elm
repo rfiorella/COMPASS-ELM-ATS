@@ -28,5 +28,3 @@
  hist_fincl1 = 'TBOT', 'PBOT','RH','RAIN','SNOW', 'TLAI', 'ZWT', 'SMP', 'SOILLIQ', 'SOILICE'
  hist_mfilt = 1
 
- use_ats = .false.
-
