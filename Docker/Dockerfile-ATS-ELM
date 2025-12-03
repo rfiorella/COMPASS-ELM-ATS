@@ -14,7 +14,7 @@ ENV https_proxy= \
 # end LANL stuff
 
 # ORNL stuff -- corporate certificates
-COPY Docker/ca.crt /usr/local/share/ca-certificates/corp-ca.crt
+COPY Docker/cert_files/ /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 # end ORNL stuff
 
