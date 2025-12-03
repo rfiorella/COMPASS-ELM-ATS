@@ -4,8 +4,8 @@
 set -e
 
 # set up local variables
-export RUN_NAME="oakharbor_serial"
-export INPUTDATA_NAME="1x1pt_Oakharbor"
+export RUN_NAME="tempest_parallel"
+export INPUTDATA_NAME="110x1pt_US-GC_TransTEMPEST"
 export COMPSET="ICB20TRCNPRDCTCBC"
 export CASE_DIR="${E3SM_WORK_DIR}/output/cases/${RUN_NAME}"
 export GITHUB_ACTIONS=TRUE
@@ -23,7 +23,7 @@ echo ""
 echo "Setting up case input"
 echo "----------------------"
 if [ $GITHUB_ACTIONS ]; then
-  cp $(find / -path '*/examples/oakharbor_transect')/* ${CASE_DIR}
+  cp $(find / -path '*/examples/tempest_transect')/* ${CASE_DIR}
 else
   cp ./* ${CASE_DIR}
 fi
@@ -38,11 +38,11 @@ sed -i "s^MESH_FILENAME^${CASE_DIR}/${RUN_NAME}.exo^g" ${CASE_DIR}/${RUN_NAME}.x
 ./xmlchange LND_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
 
 # these are now example specific
-./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
-./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}-GRID_navy.nc
+./xmlchange ATM_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}_c20230901.nc
+./xmlchange LND_DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}_c20230901.nc
 
-./xmlchange NTASKS=1
-./xmlchange NTASKS_PER_INST=1
+./xmlchange NTASKS=4
+./xmlchange NTASKS_PER_INST=4
 ./xmlchange PIO_TYPENAME=netcdf
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nmonths,STOP_N=2
