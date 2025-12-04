@@ -25,7 +25,6 @@
 
 # exit on error
 set -e
-set DEBUG=TRUE
 shopt -s nullglob
 
 # process directory structure
@@ -109,7 +108,7 @@ echo "CASE_SOURCE = ${CASE_SOURCE}"
 echo "SHARED_SOURCE = ${SHARED_SOURCE}"
 
 # cp over example files to the case directory
-cp ${CASE_SOURCE}/* ${CASE_DIR}/
+cp -r ${CASE_SOURCE}/* ${CASE_DIR}/
 if [ "${USE_ATS}" != "FALSE" ]; then
     if [ -e "${SHARED_SOURCE}/${DOMAIN_NAME}.exo" ]; then
 	cp ${SHARED_SOURCE}/${DOMAIN_NAME}.exo ${CASE_DIR}/
@@ -153,6 +152,9 @@ else
         exit 1
     fi        
 fi
+
+./xmlchange ATM_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
+./xmlchange LND_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
 ./xmlchange ATM_DOMAIN_FILE=${DOMAIN_FILE}
 ./xmlchange LND_DOMAIN_FILE=${DOMAIN_FILE}
 
@@ -167,7 +169,7 @@ fi
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
-./xmlchange DEBUG=TRUE
+./xmlchange DEBUG=FALSE # DEBUG TRUE breaks transect runs?
 
 # setup the case
 echo ""

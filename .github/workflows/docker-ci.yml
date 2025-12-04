@@ -71,9 +71,10 @@ jobs:
       - name: run test case
         run: |
           export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
+          export USE_ATS=TRUE
           . $(find / -path '*/oakharbor_column/build_example.sh')
   test-elmonly:
     needs: build
@@ -95,9 +96,10 @@ jobs:
       - name: run test case
         run: |
           export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
+          export USE_ATS=FALSE
           . $(find / -path '*/oakharbor_elmonly/build_example.sh')
   serial-transect:
     needs: build
@@ -119,10 +121,11 @@ jobs:
       - name: run test case
         run: |
           export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
+          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
-          . $(find / -path '*/tempest_transect/build_serial.sh')
+          export USE_ATS=TRUE
+          . $(find / -path '*/oakharbor_transect/build_example.sh')
   parallel-transect:
     needs: build
     name: Parallel transect
@@ -146,4 +149,6 @@ jobs:
           export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
           export MACHINE_NAME=docker-ats
           export COMPILER_NAME=gnu
-          . $(find / -path '*/tempest_transect/build_parallel.sh')
+          export USE_ATS=TRUE
+          export NTASKS=2
+          . $(find / -path '*/oakharbor_transect/build_example.sh')
