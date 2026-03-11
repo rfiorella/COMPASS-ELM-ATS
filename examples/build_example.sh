@@ -65,7 +65,7 @@ if [ -z "${USE_ATS}" ]; then
     echo "Set USE_ATS before running."
     exit 1
 elif [ "${USE_ATS}" == "TRUE" ]; then
-    CASE_SUFFIX=ats
+    CASE_SUFFIX=elm-ats
 elif [ "${USE_ATS}" == "IC_ONLY" ]; then
     CASE_SUFFIX=ic_only
 elif [ "${USE_ATS}" == "FALSE" ]; then
