@@ -5,11 +5,15 @@ on:
     branches:
       - '**'
 jobs:
-  # need to split job builds by architecture like amanzi and ats,
-  # even though emulation is fast, the runners are not large enough
-  # in RAM
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4
@@ -44,111 +48,115 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Docker/Dockerfile-ATS-ELM
+          file: ./Docker/Dockerfile-run
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-amd64
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-${{ matrix.arch }}
           build-args: |
             amanzi_branch='master'
             amanzi_tpls_ver=${{env.AMANZI_TPLS_VER}}
             ats_branch='master'
   test-elmats:
     needs: build
-    name: ELM-ATS single column
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    name: ELM-ATS single column (${{ matrix.arch }})
     container:
-      image: metsi/compass-elm-ats:latest
+      image: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-${{ matrix.arch }}
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird HOME issue
-        run: |
-          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
-          export MACHINE_NAME=docker-ats
-          export COMPILER_NAME=gnu
           export USE_ATS=TRUE
-          . $(find / -path '*/oakharbor_column/build_example.sh')
+          cd /home/amanzi_user/compass/examples/oakharbor_column && ./build_example.sh
   test-elmonly:
     needs: build
-    name: ELM only single column
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    name: ELM only single column (${{ matrix.arch }})
     container:
-      image: metsi/compass-elm-ats:latest
+      image: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-${{ matrix.arch }}
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird HOME issue
-        run: |
-          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
-          export MACHINE_NAME=docker-ats
-          export COMPILER_NAME=gnu
           export USE_ATS=FALSE
-          . $(find / -path '*/oakharbor_elmonly/build_example.sh')
+          cd /home/amanzi_user/compass/examples/oakharbor_column && ./build_example.sh
   serial-transect:
     needs: build
-    name: Serial transect
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    name: Serial transect (${{ matrix.arch }})
     container:
-      image: metsi/compass-elm-ats:latest
+      image: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-${{ matrix.arch }}
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird HOME issue
-        run: |
-          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/compass
-          export MACHINE_NAME=docker-ats
-          export COMPILER_NAME=gnu
           export USE_ATS=TRUE
-          . $(find / -path '*/oakharbor_transect/build_example.sh')
+          cd /home/amanzi_user/compass/examples/oakharbor_transect && ./build_example.sh
   parallel-transect:
     needs: build
-    name: Parallel transect
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    name: Parallel transect (${{ matrix.arch }})
     container:
-      image: metsi/compass-elm-ats:latest
+      image: ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-${{ matrix.arch }}
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: deal with weird HOME issue
-        run: |
-          echo HOME=/home/amanzi_user >> "$GITHUB_ENV"
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GHA_PAT }}
       - name: run test case
         run: |
-          export E3SM_WORK_DIR=/home/amanzi_user/work
-          export ELM_ATS_SRC_DIR=/home/amanzi_user/E3SM
-          export MACHINE_NAME=docker-ats
-          export COMPILER_NAME=gnu
           export USE_ATS=TRUE
           export NTASKS=2
-          . $(find / -path '*/oakharbor_transect/build_example.sh')
+          cd /home/amanzi_user/compass/examples/oakharbor_transect && ./build_example.sh
+  fix-manifest:
+    needs: [test-elmats, test-elmonly, serial-transect, parallel-transect]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Pull images
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-arm64
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-amd64
+      - name: Create and push manifest
+        run: |
+          docker manifest create ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest \
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-arm64 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest-amd64
+          docker manifest push ${{ secrets.DOCKERHUB_USERNAME }}/compass-elm-ats:latest
