@@ -20,6 +20,7 @@
 #  - DOMAIN_NAME : identifies the mesh file, domain.nc file, etc about the simulation domain, defaults to CASE_NAME)
 #  - ATS_CASE_NAME : identifies the xml file/parameters for ATS
 #  - COMPSET : E3SM compset, default is "ICB20TRCNPRDCTCBC"
+#  - INPUTDATA_DIR : path to ELM input data directory, defaults to $E3SM_WORK_DIR/inputdata
 #  - GITHUB_ACTIONS : is this run through CI?  Default is FALSE
 #  - NTASKS : for parallel runs
 
@@ -96,8 +97,8 @@ echo ""
 echo "Setting up case input"
 echo "----------------------"
 if [ "${GITHUB_ACTIONS}" = "TRUE" ]; then
-    export CASE_SOURCE=$(find / -path '*/examples/${CASE_NAME}')
-    export SHARED_SOURCE=$(find / -path '*/examples/shared')
+    export CASE_SOURCE=$(find / -path "*/examples/${CASE_NAME}" 2>/dev/null)
+    export SHARED_SOURCE=$(find / -path "*/examples/shared" 2>/dev/null)
 else
     export CASE_SOURCE="./"
     export SHARED_SOURCE="../shared"
@@ -139,23 +140,26 @@ fi
 
 
 # ELM
-./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${E3SM_WORK_DIR}/inputdata
+if [ -z "${INPUTDATA_DIR}" ]; then
+    INPUTDATA_DIR=${E3SM_WORK_DIR}/inputdata
+fi
+./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${INPUTDATA_DIR}
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
 
 # try to find the domain.nc file: these are now example specific
 if [ -z "${DOMAIN_FILE}" ]; then
     if [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
-	DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
+	    DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
     else
-	matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
-	if (( ${#matches[@]} == 1 )); then
-            file="${matches[0]}"
-            DOMAIN_FILE="${file##*/}"
-	else
-            echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
-            exit 1
-	fi        
+	    matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
+        if (( ${#matches[@]} == 1 )); then
+                file="${matches[0]}"
+                DOMAIN_FILE="${file##*/}"
+        else
+                echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+                exit 1
+        fi        
     fi
 fi
     
