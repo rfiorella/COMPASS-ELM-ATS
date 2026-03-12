@@ -32,7 +32,7 @@ IMAGE_NAME=compass-elm-ats:run
 EXAMPLE=
 CASE_NAME=
 NTASKS=1
-OUTPUT_DIR="${REPO_ROOT}/output"
+OUTPUT_DIR="/data/compass/output"
 HIST_FILE=h0
 RUN_PLOTS=true
 BUILD_ONLY=false
@@ -85,7 +85,7 @@ echo ""
 # Build the Docker image
 # ---------------------------------------------------------------------------
 echo "=== Building Docker image ==="
-docker build \
+docker build --pull \
     -f "${REPO_ROOT}/Docker/Dockerfile-run" \
     -t "${IMAGE_NAME}" \
     "${REPO_ROOT}"
