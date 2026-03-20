@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
+cftime = None  # placeholder to satisfy static analysis
 try:
     import cftime
 
@@ -57,9 +58,8 @@ VARIABLE_GROUPS = {
     "hydrology": {
         "DWB", "H2OSFC", "H2OSNO", "H2OSNO_TOP", "INT_SNOW",
         "FSAT", "FINUNDATED", "FINUNDATED_LAG",
-        "WATSAT", "SUCSAT", "BSW", "HKSAT",
-        "ALT", "ALTMAX", "ALTMAX_LASTYEAR",
-        "ZWT", "SOILLIQ", "SOILICE", "SMP",
+        "BSW",
+        # Add any additional water‑related variables that appear in future cases.
     },
     "soil": {
         "ZSOI", "DZSOI",
@@ -113,9 +113,10 @@ VARIABLE_GROUPS = {
 # ---------------------------------------------------------------------------
 
 def _fix_time(ds):
-    """Convert cftime datetimes (e.g. no_leap) to pandas datetimes for matplotlib."""
-    if HAS_CFTIME and len(ds["time"]) > 0:
-        if isinstance(ds["time"].values[0], cftime.datetime):
+    """Convert cftime datetimes to standard datetimes for matplotlib."""
+    if HAS_CFTIME and len(ds["time"]) > 0 and cftime is not None:
+        # Check if the first time value is a cftime datetime instance
+        if isinstance(ds["time"].values[0], getattr(cftime, "datetime", type(None))):
             import pandas as pd
 
             ds["time"] = pd.to_datetime(
@@ -236,9 +237,18 @@ def load_simulations(base_dir, case_name, hist_file):
     return datasets
 
 
-# ---------------------------------------------------------------------------
-# Plot functions
-# ---------------------------------------------------------------------------
+def _get_long_name(var, ds):
+    """Return the variable's long_name attribute if present, otherwise the variable name.
+
+    Parameters
+    ----------
+    var: str
+        Variable name.
+    ds: xarray.Dataset
+        Dataset containing the variable.
+    """
+    attrs = ds[var].attrs
+    return attrs.get("long_name", var)
 
 def plot_timeseries(datasets, variables, output_dir, hist_file):
     """Time series for surface (non-depth) variables, all simulations on one axes."""
@@ -249,27 +259,138 @@ def plot_timeseries(datasets, variables, output_dir, hist_file):
             continue
 
         sample_ds = next(iter(available.values()))
-        if _get_depth_dim(sample_ds[var]) is not None:
-            continue  # depth variables handled separately
+        long_name = _get_long_name(var, sample_ds)
+        dims = sample_ds[var].dims
+        has_depth = any(d in dims for d in ("levgrnd", "levsoi", "levdcmp"))
 
-        fig, ax = plt.subplots(figsize=(10, 4))
-        for label, ds in available.items():
-            data = ds[var].squeeze()
-            ax.plot(ds["time"], data, label=label, color=SIM_COLORS[label])
-        ax.set_ylabel(var)
-        ax.set_xlabel("Time")
-        ax.set_title(f"{var} — Time Series")
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        plt.tight_layout()
-        fig.savefig(os.path.join(output_dir, f"timeseries_{var}_{hist_file}.png"), dpi=150)
+        if has_depth:
+            # 2‑D contour: time vs depth, one subplot per simulation (stacked vertically)
+            depth_dim = next(d for d in ("levgrnd", "levsoi", "levdcmp") if d in dims)
+            depth_vals = sample_ds[depth_dim].values
+            # Gather data from all simulations to compute a common colour scale
+            all_data = []
+            for ds in available.values():
+                d = ds[var].values
+                d = np.squeeze(d)
+                if d.ndim == 2:
+                    if d.shape[0] == len(depth_vals) and d.shape[1] == len(ds["time"]):
+                        d = d.T
+                elif d.ndim > 2:
+                    d = d.mean(axis=tuple(range(2, d.ndim)))
+                    if d.shape[0] == len(depth_vals) and d.shape[1] == len(ds["time"]):
+                        d = d.T
+                # Align shapes (trim if needed)
+                t_vals = ds["time"].values
+                if d.shape != (len(depth_vals), len(t_vals)):
+                    if d.shape == (len(t_vals), len(depth_vals)):
+                        d = d.T
+                    else:
+                        min_len = min(d.shape[-1], len(t_vals))
+                        min_dep = min(d.shape[0], len(depth_vals))
+                        d = d[:min_dep, :min_len]
+                        t_vals = t_vals[:min_len]
+                        depth_vals = depth_vals[:min_dep]
+                all_data.append(d)
+            # Compute global min/max ignoring NaNs
+            global_min = np.nanmin([np.nanmin(d) for d in all_data])
+            global_max = np.nanmax([np.nanmax(d) for d in all_data])
+            # Create subplots
+            fig, axes = plt.subplots(
+                len(available), 1, figsize=(10, 3 * len(available)), sharex=True, sharey=True
+            )
+            # Adjust layout to make room for the shared colourbar
+            fig.subplots_adjust(right=0.85)
+            if len(available) == 1:
+                axes = [axes]
+            # Ensure deterministic order of simulations
+            sim_items = list(available.items())
+            cf = None  # will hold the last contour for colorbar
+            for ax, (label, ds) in zip(axes, sim_items):
+                data = ds[var].values
+                data = np.squeeze(data)
+                if data.ndim == 2:
+                    if data.shape[0] == len(depth_vals) and data.shape[1] == len(ds["time"]):
+                        data = data.T
+                elif data.ndim > 2:
+                    data = data.mean(axis=tuple(range(2, data.ndim)))
+                    if data.shape[0] == len(depth_vals) and data.shape[1] == len(ds["time"]):
+                        data = data.T
+                time_vals = ds["time"].values
+                if data.shape != (len(depth_vals), len(time_vals)):
+                    if data.shape == (len(time_vals), len(depth_vals)):
+                        data = data.T
+                    else:
+                        min_len = min(data.shape[-1], len(time_vals))
+                        min_dep = min(data.shape[0], len(depth_vals))
+                        data = data[:min_dep, :min_len]
+                        time_vals = time_vals[:min_len]
+                        depth_vals = depth_vals[:min_dep]
+                # Use common colour limits
+                cf = ax.contourf(time_vals, depth_vals, data, cmap="viridis", vmin=global_min, vmax=global_max)
+                ax.set_ylabel("Depth (m)")
+                ax.set_title(label)
+                ax.invert_yaxis()
+            # Add a single shared colourbar for the whole figure if contour data exists
+            if cf is not None:
+                cbar = fig.colorbar(cf, ax=axes, orientation="vertical", label=f"{var} ({long_name})", fraction=0.046, pad=0.04)
+            axes[-1].set_xlabel("Time")
+            fig.suptitle(f"{var} ({long_name}) — Time‑Depth Contour", fontsize=14)
+        else:
+            fig, ax = plt.subplots(figsize=(10, 4))
+            for label, ds in available.items():
+                data = ds[var].squeeze()
+                ax.plot(ds["time"], data, label=label, color=SIM_COLORS[label])
+            ax.set_ylabel(f"{var} ({long_name})")
+            ax.set_xlabel("Time")
+            ax.set_title(f"{long_name} — Time Series")
+            ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+            ax.grid(True, alpha=0.3)
+
+        plt.tight_layout(rect=(0,0,0.85,1))
+        fig.savefig(os.path.join(output_dir, f"timeseries_{var}_{hist_file}.png"), dpi=150, bbox_inches='tight')
         plt.close(fig)
         print(f"  Saved timeseries_{var}_{hist_file}.png")
 
 
-def plot_depth_lines(datasets, variables, output_dir, hist_file):
-    """(a) Depth variables: subplots by selected depth levels, one line per simulation."""
-    for var in variables:
+def _format_time(t):
+    """Return a short string representation of a time coordinate element.
+
+    Handles NumPy ``datetime64`` objects, pandas ``Timestamp``/``datetime``
+    objects, and plain numeric values (e.g., days since a reference).
+    """
+    # First, handle pandas Timestamp or Python datetime objects that have ``strftime``
+    if hasattr(t, "strftime"):
+        try:
+            return t.strftime("%Y-%m-%d")
+        except Exception:
+            pass
+    # NumPy datetime64 (or generic NumPy scalar that can be cast)
+    if isinstance(t, np.generic):
+        # Convert NumPy scalar (including datetime64) to string safely
+        try:
+            return str(t)
+        except Exception:
+            pass
+    # Fallback: handle pure numeric values (e.g., days since reference) or generic fallback
+    if isinstance(t, (int, float, np.number)):
+        return str(t)
+    try:
+        return np.datetime_as_string(np.array(t, dtype="datetime64[ns]"), unit="D")
+    except Exception:
+        return str(t)
+
+def plot_profiles(datasets, variables, output_dir, hist_file):
+    """Plot vertical profiles for soil variables at selected time steps."""
+    # Identify variables that have a depth dimension across any dataset
+    depth_vars = []
+    for v in variables:
+        for ds in datasets.values():
+            if v in ds and any(d in ds[v].dims for d in ("levgrnd", "levsoi", "levdcmp")):
+                depth_vars.append(v)
+                break
+    if not depth_vars:
+        return
+    for var in depth_vars:
         available = {k: ds for k, ds in datasets.items() if var in ds}
         if not available:
             continue
@@ -287,17 +408,26 @@ def plot_depth_lines(datasets, variables, output_dir, hist_file):
         if len(indices) == 1:
             axes = [axes]
 
-        for ax, idx in zip(axes, indices):
+        # Determine the display name for the variable once, before plotting axes
+        long_name = _get_long_name(var, sample_ds)
+        for ax, ti in zip(axes, snap_indices):
+            # Use robust formatting for the time label
+            t_val = _format_time(sample_ds["time"].values[ti])
             for label, ds in available.items():
-                data = ds[var].isel({depth_dim: idx}).squeeze()
-                ax.plot(ds["time"], data, label=label, color=SIM_COLORS[label])
-            ax.set_ylabel(f"{var}\n({depth_vals[idx]:.2f} m)")
+                depths = ds[depth_dim].values
+                values = ds[var].isel(time=ti).squeeze().values
+                ax.plot(values, depths, label=label, color=SIM_COLORS[label])
+            ax.set_title(f"t = {t_val}")
+            ax.set_xlabel(f"{var} ({long_name})")
+            ax.invert_yaxis()
             ax.legend(fontsize="small")
             ax.grid(True, alpha=0.3)
-        axes[-1].set_xlabel("Time")
-        fig.suptitle(f"{var} — Time Series by Depth", fontsize=14)
-        plt.tight_layout()
-        fig.savefig(os.path.join(output_dir, f"depth_lines_{var}_{hist_file}.png"), dpi=150)
+
+        axes[0].set_ylabel("Depth (m)")
+        long_name = _get_long_name(var, sample_ds)
+        fig.suptitle(f"{var} ({long_name}) — Vertical Profiles", fontsize=14)
+        plt.tight_layout(rect=(0,0,0.85,1))
+        fig.savefig(os.path.join(output_dir, f"profile_{var}_{hist_file}.png"), dpi=150, bbox_inches='tight')
         plt.close(fig)
         print(f"  Saved depth_lines_{var}_{hist_file}.png")
 
@@ -405,6 +535,7 @@ def plot_differences(datasets, variables, output_dir, hist_file):
                 ).squeeze()
                 ax.plot(common_times, diff, label=diff_label, color=diff_colors[diff_label])
             ax.set_ylabel(f"Delta {var} (depth-averaged)")
+            ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
         else:
             for diff_label, sim_label in diff_labels.items():
                 if sim_label not in datasets or var not in datasets[sim_label]:
@@ -423,10 +554,10 @@ def plot_differences(datasets, variables, output_dir, hist_file):
         ax.axhline(0, color="k", linewidth=0.5)
         ax.set_xlabel("Time")
         ax.set_title(f"{var} — Differences from ELM")
-        ax.legend()
+        ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
         ax.grid(True, alpha=0.3)
-        plt.tight_layout()
-        fig.savefig(os.path.join(output_dir, f"diff_{var}_{hist_file}.png"), dpi=150)
+        plt.tight_layout(rect=(0,0,0.85,1))
+        fig.savefig(os.path.join(output_dir, f"diff_{var}_{hist_file}.png"), dpi=150, bbox_inches='tight')
         plt.close(fig)
         print(f"  Saved diff_{var}_{hist_file}.png")
 
@@ -458,9 +589,22 @@ def main():
         r"RETRANSP", r"RETRANSN", r"OVER", r"IRR", r"DRIP", r"DWB",
         r"ALT", r"ALTMAX", r"SOILLIQ", r"SOILICE",
     ]
-    for v in all_ds_vars:
+    # Variables to explicitly exclude from hydrology group even if they match patterns.
+    exclude_vars = {
+        "ALT", "ALTMAX", "ALTMAX_LASTYEAR", "RAIN", "SNOW", "WATSAT", "HKSAT", "SUCSAT",
+        "water_scaler",
+        "QBOT", "QFLOOD", "QFLOOD_.*", "QFLX_ICE_DYNBAL", "QFLX_LIQ_DYNBAL",
+        "QIRRIG", "QIRRIG_.*", "RETRANSN", "RETRANSP",
+    }
+    for v in all_vars:
         if any(re.search(p, v, re.I) for p in hydro_patterns):
-            VARIABLE_GROUPS["hydrology"].add(v)
+            # Skip excluded variables (exact match or pattern match)
+            if v in exclude_vars:
+                continue
+            # Additional pattern-based exclusions (wildcards handled via regex)
+            if any(re.match(pat, v) for pat in [r'QFLOOD.*', r'QFLX_ICE_DYNBAL', r'QFLX_LIQ_DYNBAL', r'QIRRIG.*']):
+                continue
+            VARIABLE_GROUPS.setdefault('hydrology', set()).add(v)
 
     if not datasets:
         print("No simulation data found. Nothing to plot.")
