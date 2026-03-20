@@ -9,14 +9,15 @@
 #   ./run_all_cases.sh --example oakharbor_transect --ntasks 2 [options]
 #
 # Options:
-#   --example NAME    Example directory under examples/ (required)
-#   --case-name NAME  Override case name for output paths (default: same as
-#                     --example, or --example.np<NTASKS> for transects)
-#   --ntasks N        Number of MPI tasks (default: 1)
-#   --output-dir DIR  Host directory for output (default: <repo>/output)
-#   --hist-file h0|h1 History stream for plots (default: h0)
-#   --no-plots        Skip comparison plot generation
-#   --build-only      Build Docker image and exit
+#   --example NAME          Example directory under examples/ (required)
+#   --case-name NAME        Override case name for output paths (default: same as
+#                           --example, or --example.np<NTASKS> for transects)
+#   --ntasks N              Number of MPI tasks (default: 1)
+#   --output-dir DIR        Host directory for output (default: <repo>/output)
+#   --hist-file h0|h1       History stream for plots (default: h0)
+#   --no-plots              Skip comparison plot generation
+#   --build-only            Build Docker image and exit
+#   --delete-existing, -d   Automatically delete any existing case and output directories
 #
 # The host output directory is mounted into the container at
 # /home/amanzi_user/work (the container's E3SM_WORK_DIR).
@@ -36,6 +37,28 @@ OUTPUT_DIR="/data/compass/output"
 HIST_FILE=h0
 RUN_PLOTS=true
 BUILD_ONLY=false
+# New flag: automatically delete existing case/output directories
+DELETE_EXISTING=false
+
+# Print help/usage information
+show_help() {
+    cat <<EOF
+Usage: $0 --example NAME [options]
+
+Options:
+  --example NAME          Example directory under examples/ (required)
+  --case-name NAME        Override case name for output paths (default: same as
+                          --example, or --example.np<NTASKS> for transects)
+  --ntasks N              Number of MPI tasks (default: 1)
+  --output-dir DIR        Host directory for output (default: <repo>/output)
+  --hist-file h0|h1       History stream for plots (default: h0)
+  --no-plots              Skip comparison plot generation
+  --build-only            Build Docker image and exit
+  --delete-existing, -d   Automatically delete any existing case and output directories
+  -h, --help              Show this help message and exit
+EOF
+}
+
 
 # ---------------------------------------------------------------------------
 # Parse arguments
@@ -49,9 +72,11 @@ while [[ $# -gt 0 ]]; do
         --hist-file)  HIST_FILE="$2"; shift 2 ;;
         --no-plots)   RUN_PLOTS=false; shift ;;
         --build-only) BUILD_ONLY=true; shift ;;
+        --delete-existing|-d) DELETE_EXISTING=true; shift ;;
+        -h|--help)    show_help; exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
-done
+    done
 
 if [ -z "${EXAMPLE}" ]; then
     echo "Error: --example is required"
@@ -80,6 +105,47 @@ echo "Example:   ${EXAMPLE}"
 echo "Case name: ${CASE_NAME}"
 echo "NTASKS:    ${NTASKS}"
 echo ""
+
+# ---------------------------------------------------------------------------
+# Delete any pre‑existing case or output directories (if requested)
+# ---------------------------------------------------------------------------
+# Directories that may already exist from a previous run:
+#   ${OUTPUT_DIR}/cases/${CASE_NAME}.elm
+#   ${OUTPUT_DIR}/cases/${CASE_NAME}.ic_only
+#   ${OUTPUT_DIR}/cases/${CASE_NAME}.elm-ats
+#   ${OUTPUT_DIR}/output/${CASE_NAME}.elm
+#   ${OUTPUT_DIR}/output/${CASE_NAME}.ic_only
+#   ${OUTPUT_DIR}/output/${CASE_NAME}.elm-ats
+DIRS_TO_CHECK=(
+    "${OUTPUT_DIR}/cases/${CASE_NAME}.elm"
+    "${OUTPUT_DIR}/cases/${CASE_NAME}.ic_only"
+    "${OUTPUT_DIR}/cases/${CASE_NAME}.elm-ats"
+    "${OUTPUT_DIR}/output/${CASE_NAME}.elm"
+    "${OUTPUT_DIR}/output/${CASE_NAME}.ic_only"
+    "${OUTPUT_DIR}/output/${CASE_NAME}.elm-ats"
+)
+
+for d in "${DIRS_TO_CHECK[@]}"; do
+    if [ -d "$d" ]; then
+        if $DELETE_EXISTING; then
+            echo "[run_all_cases] Deleting existing directory $d (auto‑delete flag)"
+            rm -rf "$d"
+        else
+            # Prompt the user for confirmation
+            read -p "Directory $d already exists. Delete it? (y/n) " answer
+            case "$answer" in
+                [Yy]* )
+                    echo "Deleting $d..."
+                    rm -rf "$d"
+                    ;;
+                * )
+                    echo "Aborting: existing directory $d not removed."
+                    exit 1
+                    ;;
+            esac
+        fi
+    fi
+done
 
 # ---------------------------------------------------------------------------
 # Build the Docker image
@@ -156,8 +222,8 @@ if [ "${RUN_PLOTS}" = true ]; then
         --base-dir "${OUTPUT_DIR}" \
         --case-name "${CASE_NAME}" \
         --hist-file "${HIST_FILE}" \
-        --output-dir "${OUTPUT_DIR}/figures"
-    echo "Figures saved to ${OUTPUT_DIR}/figures/"
+        --output-dir "${OUTPUT_DIR}/${CASE_NAME}/figures"
+    echo "Figures saved to ${OUTPUT_DIR}/${CASE_NAME}/figures/"
 fi
 
 echo ""
