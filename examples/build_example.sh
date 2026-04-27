@@ -200,5 +200,15 @@ echo "Run the case yourself:"
 echo "----------------------"
 echo "pushd ${CASE_DIR} && ./case.submit"
 if [ "$GITHUB_ACTIONS" = "TRUE" ]; then
-  ./case.submit --no-batch 
-fi 
+  ./case.submit --no-batch
+
+  # case.submit --no-batch swallows run failures (env_batch.py),
+  # so independently verify the simulation completed.
+  if grep -q "case.run success" "${CASE_DIR}/CaseStatus"; then
+    echo "Simulation completed successfully."
+  else
+    echo "ERROR: Simulation failed! CaseStatus contents:"
+    cat "${CASE_DIR}/CaseStatus"
+    exit 1
+  fi
+fi
