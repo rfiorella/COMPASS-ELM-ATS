@@ -3,30 +3,68 @@
 [![Build Docker Image](https://github.com/amanzi/COMPASS-ELM-ATS/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/amanzi/COMPASS-ELM-ATS/actions/workflows/docker-ci.yml)
 
 ELM-ATS should build from the head of ATS master branch, and against
-the E3SM commit in the linked submodule. Two options to test/build the stack:
+the E3SM commit in the linked submodule. Two options to test/build the stack -- with docker and locally.  Both need to clone the repository:
+
+## Repo and branch selection
+
+1) Clone this repo. `git clone https://github.com/amanzi/COMPASS-ELM-ATS`
+2) While submodules are included for E3SM, Amanzi, ATS, and ELM input datafiles, for now it is safer to use the tip of the corresponding development branch.
+
+```
+cd COMPASS-ELM-ATS
+export ELM_ATS_SRC_DIR=`pwd`
+
+# E3SM
+git submodule update --init --recursive E3SM
+cd E3SM
+git checkout elm-ats-dev
+git pull
+cd ..
+
+# Amanzi & ATS
+git submodule update --init --recursive amanzi
+cd amanzi
+git checkout elm_ats
+git pull
+cd src/physics/ats
+git checkout elm_ats
+git pull
+cd ../../../..
+```
+
+3) Set up the work and cases directories and unpack the input data.
+
+```
+git submodule update --init --recursive work/inputdata
+cd work/inputdata
+git checkout compass-glm
+git pull
+. ./unpack.sh
+cd ../../
+```
+
+OR, if you know what you're doing or you are on an established HPC
+machien, replace `work/inputdata` with a link to an existing, unpacked
+ELM inputdata repo.
+
 
 ## Docker
 ~~The image created by CI works now! So: `docker run -it metsi/compass-elm-ats:latest` and then can follow the general workflow in the ci.yml file to setup and build the case.~~ 
 
 Steps if using docker but not the CI image (e.g., Apple Silicon).  Note that this uses the CI-built ATS, so if you change ATS, that must get pushed to e.g. elm_ats branch and rebuilt there.
 
-1) Clone this repo, then `cd Docker; ./deploy-ats-elm-docker.sh`
+1) Build the docker container:
+```
+docker build --pull --progress=plain --no-cache -f Docker/Dockerfile-ATS-ELM-DEV -t metsi/ats:elm_api .
+```
+
 2) Then, from the top level repo directory: 
 ```
-docker run -it --user=amanzi_user -e E3SM_WORK_DIR=/home/amanzi_user/work -e ELM_ATS_SRC_DIR=/home/amanzi_user/compass -e MACHINE_NAME=docker-ats -e COMPILER_NAME=gnu -v $(pwd):/home/amanzi_user/compass metsi/ats:elm_api 
+docker run -it --user=amanzi_user -e E3SM_WORK_DIR=/home/amanzi_user/compass/work -e ELM_ATS_SRC_DIR=/home/amanzi_user/compass -e MACHINE_NAME=docker-ats -e COMPILER_NAME=gnu -v $(pwd):/home/amanzi_user/compass metsi/ats:elm_api 
 ```
-(or, whatever tag was specified in deploy script from step 1.)
 
-3) `cd compass/examples`
-4) E3SM currently seems to require that git config user.name and user.email are set:
-```
-git config --global user.name "tester"
-git config --global user.email "test@dev.null"
-```
-5) Oak Harbor ELM only test - worked for me as of 9/23/25
-6) Oak Harbor ELM-ATS test - 
+### Common issues:
 
-Common issues:
 - NC_FillValue errors in build log - `$ELM_ATS_SRC_DIR` is pointing to out-of-date E3SM version.
 - "No machine docker-ats found" - is `$HOME` set to `/home/amanzi_user`?
 
@@ -70,12 +108,12 @@ To build locally on a Mac or Linux machine, follow the following steps.
 
 Follow the examples:
 
-0) `cd ${ELM_ATS_SRC_DIR}/examples/EXAMPLE_NAME`
-1) Run the enclosed script `./build_example.sh` which creates the new case and calls case.setup and case.build.  Pass the USE_ATS flag to get the variation you want:
+1) `cd ${ELM_ATS_SRC_DIR}/examples/EXAMPLE_NAME`
+2) Run the enclosed script `./build_example.sh` which creates the new case and calls case.setup and case.build.  Pass the USE_ATS flag to get the variation you want:
   - `USE_ATS=FALSE ./build_example.sh` Runs native ELM
   - `USE_ATS=IC_ONLY ./build_example.sh` Runs native ELM but with ATS's iniitial condition for easier comparison
   - `USE_ATS=TRUE ./build_example.sh` Runs ELM + ATS
-2) Follow the on-screen instructions to run the case: `cd ${CASE_DIR} && ./case.submit`
+3) Follow the on-screen instructions to run the case: `cd ${CASE_DIR} && ./case.submit`
 
 # Examples
 
@@ -83,15 +121,16 @@ This documents and describes the sequence of examples developed in this repo.
 
 ## Column Examples
 
-0. `oakharbor_column` The default Oak Harbor column -- 1 column only.  (runs, untested)
-1. `oakharbor_bare_column` Same as 0, but with bare ground PFT, not a plant-based PFT.  (runs, untested)
-2. `idealized_sand_column` Same as 0, but with pure sand? (different WRM?)  (runs on non-ATS, untested)
+1) `oakharbor_column` The default Oak Harbor column -- 1 column only.  (runs, untested)
+2) `oakharbor_bare_column` Same as 0, but with bare ground PFT, not a plant-based PFT.  (runs, untested)
+3) `idealized_sand_column` Same as 0, but with pure sand? (different WRM?)  (runs on non-ATS, untested)
 
 ## Transect Examples
 
-1. `oakharbor_transect` ??
-2. `tempest_transect` ??
+1) `oakharbor_transect_flat` A 5-column transect where the columns all have the same lat-long (same forcing data) and slope is 0, creating effectively 5 independent columns with no lateral flow.  (runs, untested.)
+2) `oakharbor_transect` Same as above, but with a slope so that lateral flow is generated.  (Starts to run -- needs debugging.)
+3) `tempest_transect` A ~100 column transect set to the Tempest transect from COMPASS FME. (WIP)
 
 ## 3D Examples
 
-1. WIP coweeta?
+1) `coweeta`  A first watershed run, for comparison to ATS native.  Set up via Watershed Workflow.  (WIP)

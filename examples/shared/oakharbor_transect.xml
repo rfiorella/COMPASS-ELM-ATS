@@ -1,5 +1,6 @@
 <ParameterList name="Main" type="ParameterList">
   <ParameterList name="mesh" type="ParameterList">
+    <Parameter name="partitioner" type="string" value="from exodus file"/>
     <ParameterList name="surface" type="ParameterList">
       <Parameter name="mesh type" type="string" value="surface"/>
       <ParameterList name="surface parameters" type="ParameterList">
@@ -9,7 +10,7 @@
     <ParameterList name="domain" type="ParameterList">
       <Parameter name="mesh type" type="string" value="read mesh file"/>
       <ParameterList name="read mesh file parameters" type="ParameterList">
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
       </ParameterList>
     </ParameterList>
@@ -27,7 +28,7 @@
     <ParameterList name="bottom" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="face"/>
       </ParameterList>
@@ -35,7 +36,7 @@
     <ParameterList name="surface" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="2"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="face"/>
       </ParameterList>
@@ -49,7 +50,7 @@
     <ParameterList name="soil layer 01" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1001"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -57,7 +58,7 @@
     <ParameterList name="soil layer 02" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1002"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -65,7 +66,7 @@
     <ParameterList name="soil layer 03" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1003"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -73,7 +74,7 @@
     <ParameterList name="soil layer 04" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1004"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -81,7 +82,7 @@
     <ParameterList name="soil layer 05" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1005"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -89,7 +90,7 @@
     <ParameterList name="soil layer 06" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1006"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -97,7 +98,7 @@
     <ParameterList name="soil layer 07" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1007"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -105,7 +106,7 @@
     <ParameterList name="soil layer 08" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1008"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -113,7 +114,7 @@
     <ParameterList name="soil layer 09" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1009"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -121,7 +122,7 @@
     <ParameterList name="soil layer 10" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1010"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -129,7 +130,7 @@
     <ParameterList name="soil layer 11_15" type="ParameterList">
       <ParameterList name="region: labeled set" type="ParameterList">
         <Parameter name="label" type="string" value="1011"/>
-        <Parameter name="file" type="string" value="MESH_FILENAME"/>
+        <Parameter name="file" type="string" value="MESH_FILENAME.exo"/>
         <Parameter name="format" type="string" value="Exodus II"/>
         <Parameter name="entity" type="string" value="Cell"/>
       </ParameterList>
@@ -214,7 +215,7 @@
       <Parameter name="source term is differentiable" type="bool" value="false"/>
       <Parameter name="permeability rescaling" type="double" value="10000000.0"/>
       <Parameter name="relative permeability method" type="string" value="upwind with Darcy flux"/>
-      <Parameter name="debug cells" type="Array(int)" value="{0,10}"/>
+      <Parameter name="debug cells" type="Array(int)" value="{0,15}"/>
       <ParameterList name="diffusion" type="ParameterList">
         <Parameter name="discretization primary" type="string" value="mfd: optimized for sparsity"/>
       </ParameterList>
@@ -242,7 +243,7 @@
       <Parameter name="water source in meters" type="bool" value="true"/>
       <Parameter name="source key" type="string" value="surface-water_source"/>
       <Parameter name="source term is differentiable" type="bool" value="false"/>
-      <Parameter name="debug cells" type="Array(int)" value="{0}"/>
+      <Parameter name="debug cells" type="Array(int)" value="{0,1}"/>
       <ParameterList name="diffusion" type="ParameterList">
         <Parameter name="discretization primary" type="string" value="fv: default"/>
       </ParameterList>
@@ -266,6 +267,21 @@
   <ParameterList name="state" type="ParameterList">
     <ParameterList name="evaluators" type="ParameterList">
 
+      <ParameterList name="surface-latitude" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="independent variable from file"/>
+        <Parameter name="constant in time" type="bool" value="true"/>
+        <Parameter name="filename" type="string" value="MESH_FILENAME.h5"/>
+        <Parameter name="variable name" type="string" value="latitude"/>
+        <Parameter name="domain name" type="string" value="surface"/>
+      </ParameterList>  
+      <ParameterList name="surface-longitude" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="independent variable from file"/>
+        <Parameter name="constant in time" type="bool" value="true"/>
+        <Parameter name="filename" type="string" value="MESH_FILENAME.h5"/>
+        <Parameter name="variable name" type="string" value="longitude"/>
+        <Parameter name="domain name" type="string" value="surface"/>
+      </ParameterList>  
+      
       <ParameterList name="surface-potential_transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="multiplicative evaluator"/>
         <Parameter name="dependencies" type="Array(string)" value="{surface-potential_transpiration_mps, surface-molar_density_liquid}"/>

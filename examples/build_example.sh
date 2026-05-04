@@ -79,11 +79,9 @@ if [ -z "${GITHUB_ACTIONS}" ]; then
     export GITHUB_ACTIONS=FALSE
 fi
 
-
-E3SM_CASE_DIR=${E3SM_WORK_DIR}/cases
 CASE_DIR="${E3SM_CASE_DIR}/${CASE_NAME}.${CASE_SUFFIX}"
 E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
-SED=sed
+SED=gsed
 
 # create the case
 echo "Creating case"
@@ -113,6 +111,9 @@ if [ "${USE_ATS}" != "FALSE" ]; then
     if [ -e "${SHARED_SOURCE}/${DOMAIN_NAME}.exo" ]; then
 	cp ${SHARED_SOURCE}/${DOMAIN_NAME}.exo ${CASE_DIR}/
     fi
+    if [ -e "${SHARED_SOURCE}/${DOMAIN_NAME}.h5" ]; then
+	cp ${SHARED_SOURCE}/${DOMAIN_NAME}.h5 ${CASE_DIR}/
+    fi
     if [ -e "${SHARED_SOURCE}/${ATS_CASE_NAME}.xml" ]; then
 	cp ${SHARED_SOURCE}/${ATS_CASE_NAME}.xml ${CASE_DIR}/
     fi
@@ -120,9 +121,12 @@ fi
 
 cd ${CASE_DIR}
 
+# make sure there is a clean endline -- an extra doesn't hurt
+echo "" >> user_nl_elm
+
 # ATS-specific
 if [ "${USE_ATS}" != "FALSE" ]; then
-    ${SED} -i "s^MESH_FILENAME^${CASE_DIR}/${DOMAIN_NAME}.exo^g" ${ATS_CASE_NAME}.xml
+    ${SED} -i "s^MESH_FILENAME^${CASE_DIR}/${DOMAIN_NAME}^g" ${ATS_CASE_NAME}.xml
 
     if [ "${USE_ATS}" == "TRUE" ]; then
 	echo " use_ats = .true." >> user_nl_elm
@@ -140,19 +144,21 @@ fi
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
 
 # try to find the domain.nc file: these are now example specific
-if [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
-    DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
-else
-    matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
-    if (( ${#matches[@]} == 1 )); then
-        file="${matches[0]}"
-        DOMAIN_FILE="${file##*/}"
+if [ -z "${DOMAIN_FILE}" ]; then
+    if [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
+	DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
     else
-        echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
-        exit 1
-    fi        
+	matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
+	if (( ${#matches[@]} == 1 )); then
+            file="${matches[0]}"
+            DOMAIN_FILE="${file##*/}"
+	else
+            echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+            exit 1
+	fi        
+    fi
 fi
-
+    
 ./xmlchange ATM_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
 ./xmlchange LND_DOMAIN_PATH=\$DIN_LOC_ROOT/share/domains/domain.clm
 ./xmlchange ATM_DOMAIN_FILE=${DOMAIN_FILE}
@@ -169,7 +175,7 @@ fi
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
-./xmlchange DEBUG=FALSE # DEBUG TRUE breaks transect runs?
+./xmlchange DEBUG=TRUE
 
 # setup the case
 echo ""
