@@ -43,8 +43,8 @@
     </ParameterList>
     <ParameterList name="surface outlet" type="ParameterList">
       <ParameterList name="region: plane" type="ParameterList">
-        <Parameter name="point" type="Array(double)" value="{500., 0.0}}"/>
-        <Parameter name="normal" type="Array(double)" value="{1.0, 0.0}}"/>
+        <Parameter name="point" type="Array(double)" value="{0.0, 0.5}}"/>
+        <Parameter name="normal" type="Array(double)" value="{0.0, 1.0}}"/>
       </ParameterList>
     </ParameterList>
     <ParameterList name="soil layer 01" type="ParameterList">
