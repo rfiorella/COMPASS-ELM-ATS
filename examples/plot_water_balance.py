@@ -30,11 +30,11 @@ VARIANTS = [
 FLUX_STYLES = {
     "P":              dict(color="tab:blue",   ls="-",  lw=2,   label="P (precip)"),
     "ET":             dict(color="tab:green",  ls="-",  lw=2,   label="ET (total)"),
-    "QFLX_EVAP_VEG": dict(color="lightgreen", ls="--", lw=1,   label="QFLX_EVAP_VEG"),
-    "QFLX_EVAP_GRND":dict(color="olive",      ls="--", lw=1,   label="QFLX_EVAP_GRND"),
-    "QFLX_TRAN_VEG": dict(color="teal",       ls="--", lw=1,   label="QFLX_TRAN_VEG"),
+    "QVEGE":          dict(color="lightgreen", ls="--", lw=1,   label="Canopy Evap"),
+    "QSOIL":          dict(color="olive",      ls="--", lw=1,   label="Soil Evap"),
+    "QVEGT":          dict(color="teal",       ls="--", lw=1,   label="Transpiration"),
     "QRUNOFF":        dict(color="tab:orange", ls="-",  lw=1.5, label="QRUNOFF"),
-    "QDRAIN":         dict(color="saddlebrown",ls="-",  lw=1.5, label="QDRAIN"),
+    "QDRAI":          dict(color="saddlebrown",ls="-",  lw=1.5, label="QDRAIN"),
     "QOVER":          dict(color="orangered",  ls=":",  lw=1.5, label="QOVER"),
     "dS":             dict(color="tab:purple", ls="-",  lw=1.5, label="\u0394S"),
 }
@@ -119,7 +119,7 @@ def compute_water_balance(ds):
 
     Returns a dict of xarray DataArrays with keys:
         P, ET, R, dS, residual (all in mm/month)
-        QFLX_EVAP_VEG, QFLX_EVAP_GRND, QFLX_TRAN_VEG, QRUNOFF, QDRAIN, QOVER
+        QVEGE, QSOIL, QVEGT, QRUNOFF, QDRAI, QOVER
         (individual components in mm/month, QOVER may be None)
     """
     sec_per_month = _seconds_per_month(ds["time"])
@@ -129,13 +129,13 @@ def compute_water_balance(ds):
     snow = ds["SNOW"].squeeze()
     P = (rain + snow) * sec_per_month
 
-    evap_veg = ds["QFLX_EVAP_VEG"].squeeze()
-    evap_grnd = ds["QFLX_EVAP_GRND"].squeeze()
-    tran_veg = ds["QFLX_TRAN_VEG"].squeeze()
+    evap_veg = ds["QVEGE"].squeeze()
+    evap_grnd = ds["QSOIL"].squeeze()
+    tran_veg = ds["QVEGT"].squeeze()
     ET = (evap_veg + evap_grnd + tran_veg) * sec_per_month
 
     qrunoff = ds["QRUNOFF"].squeeze()
-    qdrain = ds["QDRAIN"].squeeze()
+    qdrain = ds["QDRAI"].squeeze()
     R = (qrunoff + qdrain) * sec_per_month
 
     qover_da = _safe_get(ds, "QOVER")
@@ -165,11 +165,11 @@ def compute_water_balance(ds):
         "R": R,
         "dS": dS,
         "residual": residual,
-        "QFLX_EVAP_VEG": evap_veg * sec_per_month,
-        "QFLX_EVAP_GRND": evap_grnd * sec_per_month,
-        "QFLX_TRAN_VEG": tran_veg * sec_per_month,
+        "QVEGE": evap_veg * sec_per_month,
+        "QSOIL": evap_grnd * sec_per_month,
+        "QVEGT": tran_veg * sec_per_month,
         "QRUNOFF": qrunoff * sec_per_month,
-        "QDRAIN": qdrain * sec_per_month,
+        "QDRAI": qdrain * sec_per_month,
     }
     if qover_da is not None:
         result["QOVER"] = qover_da * sec_per_month
@@ -219,8 +219,8 @@ def plot_water_balance(variant_data, title=None):
         ax_cum.tick_params(labelsize=11)
 
         # --- Right: monthly fluxes ---
-        for key in ("P", "ET", "QFLX_EVAP_VEG", "QFLX_EVAP_GRND", "QFLX_TRAN_VEG",
-                     "QRUNOFF", "QDRAIN", "QOVER", "dS"):
+        for key in ("P", "ET", "QVEGE", "QSOIL", "QVEGT",
+                     "QRUNOFF", "QDRAI", "QOVER", "dS"):
             if key not in wb:
                 continue
             style = FLUX_STYLES[key]
