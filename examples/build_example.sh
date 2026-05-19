@@ -140,10 +140,7 @@ fi
 
 
 # ELM
-if [ -z "${INPUTDATA_DIR}" ]; then
-    INPUTDATA_DIR=${E3SM_WORK_DIR}/inputdata
-fi
-./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${INPUTDATA_DIR}
+./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${ELM_ATS_SRC_DIR}/inputdata
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
 
