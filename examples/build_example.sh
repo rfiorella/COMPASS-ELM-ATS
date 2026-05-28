@@ -80,7 +80,7 @@ if [ -z "${GITHUB_ACTIONS}" ]; then
     export GITHUB_ACTIONS=FALSE
 fi
 
-CASE_DIR="${E3SM_CASE_DIR}/${CASE_NAME}.${CASE_SUFFIX}"
+CASE_DIR="${E3SM_WORK_DIR}/cases/${CASE_NAME}.${CASE_SUFFIX}"
 E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 SED=gsed
 
@@ -110,13 +110,13 @@ echo "SHARED_SOURCE = ${SHARED_SOURCE}"
 cp -r ${CASE_SOURCE}/* ${CASE_DIR}/
 if [ "${USE_ATS}" != "FALSE" ]; then
     if [ -e "${SHARED_SOURCE}/${DOMAIN_NAME}.exo" ]; then
-	cp ${SHARED_SOURCE}/${DOMAIN_NAME}.exo ${CASE_DIR}/
+	    cp ${SHARED_SOURCE}/${DOMAIN_NAME}.exo ${CASE_DIR}/
     fi
     if [ -e "${SHARED_SOURCE}/${DOMAIN_NAME}.h5" ]; then
-	cp ${SHARED_SOURCE}/${DOMAIN_NAME}.h5 ${CASE_DIR}/
+	    cp ${SHARED_SOURCE}/${DOMAIN_NAME}.h5 ${CASE_DIR}/
     fi
     if [ -e "${SHARED_SOURCE}/${ATS_CASE_NAME}.xml" ]; then
-	cp ${SHARED_SOURCE}/${ATS_CASE_NAME}.xml ${CASE_DIR}/
+	    cp ${SHARED_SOURCE}/${ATS_CASE_NAME}.xml ${CASE_DIR}/
     fi
 fi
 
@@ -130,9 +130,9 @@ if [ "${USE_ATS}" != "FALSE" ]; then
     ${SED} -i "s^MESH_FILENAME^${CASE_DIR}/${DOMAIN_NAME}^g" ${ATS_CASE_NAME}.xml
 
     if [ "${USE_ATS}" == "TRUE" ]; then
-	echo " use_ats = .true." >> user_nl_elm
+	    echo " use_ats = .true." >> user_nl_elm
     else
-	echo " use_ats_ic = .true." >> user_nl_elm
+	    echo " use_ats_ic = .true." >> user_nl_elm
     fi
     echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
     echo " ats_inputfile = '${ATS_CASE_NAME}.xml'" >> user_nl_elm
@@ -154,11 +154,14 @@ if [ -z "${DOMAIN_FILE}" ]; then
     else
 	    matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
         if (( ${#matches[@]} == 1 )); then
-                file="${matches[0]}"
-                DOMAIN_FILE="${file##*/}"
-        else
-                echo "Cannot find domain file (or more than one file) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
-                exit 1
+            file="${matches[0]}"
+            DOMAIN_FILE="${file##*/}"
+        elif (( ${#matches[@]} == 0))
+            echo "Cannot find domain file for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+            exit 1
+        else 
+            echo "Domain file ambiguous (more than one found) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+            exit 2
         fi        
     fi
 fi

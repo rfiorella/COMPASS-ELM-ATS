@@ -15,7 +15,7 @@ get_tpl_version()
    echo "${tpl_version_major}.${tpl_version_minor}.${tpl_version_patch}"
 }
 
-AMANZI_BRANCH=master
+AMANZI_BRANCH=elm_ats
 AMANZI_SOURCE_DIR=${ELM_ATS_SRC_DIR}/amanzi
 AMANZI_TPLS_VER=`get_tpl_version`
 
