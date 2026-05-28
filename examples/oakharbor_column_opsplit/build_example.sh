@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-if [ -z "${USE_ATS}" ]; then
-    echo "Set USE_ATS prior to running the build_example script"
-    exit 1
-fi
-
-CASE_NAME=oakharbor_column_opsplit INPUTDATA_NAME=1x1pt_Oakharbor ../build_example.sh
