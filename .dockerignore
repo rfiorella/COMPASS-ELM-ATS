@@ -1,0 +1,49 @@
+# Exclude large submodule content not needed for oakharbor_column builds
+amanzi/
+
+# Exclude non-Oakharbor inputdata forcing (saves ~4GB)
+inputdata/atm/datm7/1x1pt_*
+inputdata/atm/datm7/42_FLUXNETSITES*
+inputdata/atm/datm7/atm_forcing.datm7.DEMO*
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3_daymet*
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1*
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_42FLUXNETSITES
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_NGEE-Grid
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_PIE-Grid
+inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v2.c180716_US-GC03-GRID
+inputdata/atm/datm7/atm_forcing.datm7.Qian*
+inputdata/atm/datm7/atm_forcing.simple_sand_column
+inputdata/atm/datm7/CLM1PT_data
+inputdata/atm/datm7/CRUJRAv2
+inputdata/atm/datm7/Daymet_ERA5
+inputdata/atm/datm7/GSWP3_daymet
+inputdata/atm/datm7/NASA_LIS
+inputdata/atm/datm7/domain.*
+
+# Exclude non-Oakharbor surface data
+inputdata/lnd/clm2/surfdata_map/*kougarok*
+inputdata/lnd/clm2/surfdata_map/*Barrow*
+inputdata/lnd/clm2/surfdata_map/*US-Brw*
+inputdata/lnd/clm2/surfdata_map/*wbw*
+inputdata/lnd/clm2/surfdata_map/*PIE*
+inputdata/lnd/clm2/surfdata_map/*GC03*
+inputdata/lnd/clm2/surfdata_map/*FLUXNET*
+inputdata/lnd/clm2/surfdata_map/*sand*
+inputdata/lnd/clm2/surfdata_map/*council*
+
+# Exclude non-Oakharbor domains
+inputdata/share/domains/domain.clm/*kougarok*
+inputdata/share/domains/domain.clm/*Barrow*
+inputdata/share/domains/domain.clm/*US-Brw*
+inputdata/share/domains/domain.clm/*wbw*
+inputdata/share/domains/domain.clm/*PIE*
+inputdata/share/domains/domain.clm/*GC03*
+inputdata/share/domains/domain.clm/*FLUXNET*
+inputdata/share/domains/domain.clm/*sand*
+inputdata/share/domains/domain.clm/*council*
+
+# Exclude top-level .git dir but keep submodule .git files (gitlinks)
+.git
+output/
+*.log

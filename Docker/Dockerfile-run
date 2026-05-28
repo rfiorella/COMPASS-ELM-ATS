@@ -1,0 +1,63 @@
+# Self-contained image for running COMPASS-ELM-ATS cases.
+# Starts from the base ATS image (pre-compiled ATS/Amanzi), adds CIME
+# dependencies, and copies the full source tree including E3SM and inputdata.
+
+FROM metsi/ats:elm_ats-latest
+
+ARG https_proxy=
+ARG http_proxy=
+
+USER root
+
+# ORNL stuff -- corporate certificates
+COPY Docker/cert_files/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+# end ORNL stuff
+
+# add libxml, perl interface for CIME
+RUN apt-get -q update -y && apt-get install -y \
+    libxml2 \
+    libxml2-dev \
+    libxml2-utils \
+    libxml-libxml-perl \
+    subversion \
+    csh \
+    gdb \
+    && apt-get clean all
+
+USER amanzi_user
+WORKDIR /home/amanzi_user
+
+# fix the Amanzi installation
+RUN cd /home/amanzi_user/install/lib \
+    && sed -i -e '4a\if (NOT TARGET netcdf)' -e '11i\endif()' AmanziImportedTargets.cmake
+
+# Add cime directory and files
+RUN mkdir -p /home/amanzi_user/.cime
+COPY cime_files/* /home/amanzi_user/.cime/
+
+# make work, case, output directories
+RUN mkdir -p work/cases \
+    && mkdir -p work/output \
+    # git must be configured for E3SM
+    && git config --global user.email "elmats@dev.null" \
+    && git config --global user.name "ELM-ATS Developer"
+
+# Copy the full COMPASS-ELM-ATS source tree (including E3SM and inputdata)
+COPY --chown=amanzi_user:amanzi_user . /home/amanzi_user/compass
+
+ENV CIMEROOT=/home/amanzi_user/E3SM/cime \
+    PYTHONPATH=/home/amanzi_user/E3SM/cime/scripts/Tools:/home/amanzi_user/E3SM/cime/scripts/lib \
+    CIME_MODEL=e3sm \
+    AMANZI_DIR=/home/amanzi_user/install/ \
+    ATS_DIR=/home/amanzi_user/install/ \
+    NETCDF_PATH=/home/amanzi_user/install/tpls \
+    HDF5_HOME=/home/amanzi_user/install/tpls \
+    HDF5_PATH=/home/amanzi_user/install/tpls \
+    USER=amanzi_user \
+    ELM_ATS_SRC_DIR=/home/amanzi_user/compass \
+    E3SM_WORK_DIR=/home/amanzi_user/work \
+    INPUTDATA_DIR=/home/amanzi_user/compass/inputdata \
+    MACHINE_NAME=docker-ats \
+    COMPILER_NAME=gnu \
+    GITHUB_ACTIONS=TRUE
