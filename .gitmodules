@@ -12,4 +12,5 @@
 	branch = compass-glm
 [submodule "watershed_workflow"]
 	path = watershed_workflow
-	url = ./watershed_workflow
+	url = git@github.com:environmental-modeling-workflows/watershed-workflow
+  	branch = ecoon/elm_ats
