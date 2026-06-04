@@ -165,7 +165,8 @@
           <Parameter name="backtrack tolerance" type="double" value="0.0001"/>
           <Parameter name="nonlinear tolerance" type="double" value="1e-8"/>
           <Parameter name="diverged tolerance" type="double" value="10000000000.0"/>
-          <Parameter name="limit iterations" type="int" value="100"/>
+          <Parameter name="limit iterations" type="int" value="25"/>
+          <Parameter name="make one iteration" type="bool" value="true"/>
         </ParameterList>
         <ParameterList name="timestep controller smarter parameters" type="ParameterList">
           <Parameter name="max iterations" type="int" value="18"/>
@@ -203,6 +204,9 @@
       <Parameter name="primary variable key" type="string" value="pressure"/>
       <Parameter name="domain name" type="string" value="domain"/>
       <Parameter name="source term" type="bool" value="true"/>
+      <ParameterList name="verbose object" type="ParameterList">
+        <Parameter name="verbosity level" type="string" value="high"/>
+      </ParameterList>
       <Parameter name="water source in meters" type="bool" value="false"/>
       <Parameter name="source key" type="string" value="water_source"/>
       <Parameter name="source term is differentiable" type="bool" value="false"/>
@@ -269,13 +273,14 @@
         <Parameter name="debug cells" type="Array(int)" value="{0,10}"/>
       </ParameterList>
 
-      <ParameterList name="surface-total_transpiration" type="ParameterList">
+      <ParameterList name="surface-transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="column sum evaluator"/>
         <Parameter name="summed key suffix" type="string" value="transpiration"/>
         <Parameter name="include volume to surface area factor" type="bool" value="true"/>
         <Parameter name="divide by density" type="bool" value="true"/>
         <Parameter name="debug cells" type="Array(int)" value="{0}"/>
       </ParameterList>
+
 
       <ParameterList name="surface-evaporation" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="evaporation downregulation, soil resistance"/>
@@ -420,15 +425,15 @@
         </ParameterList>
       </ParameterList>      
 
-      <!-- <ParameterList name="porosity" type="ParameterList"> -->
-      <!--   <Parameter name="evaluator type" type="string" value="compressible porosity"/> -->
-      <!--   <ParameterList name="compressible porosity model parameters" type="ParameterList"> -->
-      <!--     <ParameterList name="computational domain" type="ParameterList"> -->
-      <!--       <Parameter name="region" type="string" value="computational domain"/> -->
-      <!--       <Parameter name="pore compressibility [Pa^-1]" type="double" value="1e-9"/> -->
-      <!--     </ParameterList> -->
-      <!--   </ParameterList> -->
-      <!-- </ParameterList> -->
+      <ParameterList name="porosity" type="ParameterList">
+        <Parameter name="evaluator type" type="string" value="compressible porosity"/>
+        <ParameterList name="compressible porosity model parameters" type="ParameterList">
+          <ParameterList name="computational domain" type="ParameterList">
+            <Parameter name="region" type="string" value="computational domain"/>
+            <Parameter name="pore compressibility [Pa^-1]" type="double" value="1e-9"/>
+          </ParameterList>
+        </ParameterList>
+      </ParameterList>
 
       <ParameterList name="permeability" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="independent variable tensor"/>

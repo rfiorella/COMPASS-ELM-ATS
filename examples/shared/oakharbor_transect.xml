@@ -296,7 +296,7 @@
         <!-- <Parameter name="debug cells" type="Array(int)" value="{0,10}"/> -->
       </ParameterList>
 
-      <ParameterList name="surface-total_transpiration" type="ParameterList">
+      <ParameterList name="surface-transpiration" type="ParameterList">
         <Parameter name="evaluator type" type="string" value="column sum evaluator"/>
         <Parameter name="summed key suffix" type="string" value="transpiration"/>
         <Parameter name="include volume to surface area factor" type="bool" value="true"/>
@@ -304,16 +304,6 @@
         <Parameter name="debug cells" type="Array(int)" value="{0}"/>
       </ParameterList>
 
-      <!-- this integrates total_transpiration in time to compute the ELM-step average transpiration -->
-      <ParameterList name="surface-transpiration" type="ParameterList">
-        <Parameter name="evaluator type" type="string" value="time accumulated"/>
-        <Parameter name="accumulated key" type="string" value="surface-total_transpiration"/>
-        <Parameter name="accumulated tag" type="string" value=""/>
-        <Parameter name="accumulation type" type="string" value="integral"/>
-        <ParameterList name="verbose object" type="ParameterList">
-          <Parameter name="verbosity level" type="string" value="extreme"/>
-        </ParameterList>
-      </ParameterList>
 
 
       <ParameterList name="surface-evaporation" type="ParameterList">

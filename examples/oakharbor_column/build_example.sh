@@ -4,4 +4,8 @@ if [ -z "${USE_ATS}" ]; then
     exit 1
 fi
 
-CASE_NAME=oakharbor_column INPUTDATA_NAME=1x1pt_Oakharbor ../build_example.sh
+CASE_NAME=oakharbor_column \
+      INPUTDATA_NAME=1x1pt_Oakharbor \
+      DOMAIN_FILE=domain.lnd.oakharbor_column.nc \
+      SURF_DATA_FILE=surfdata_oakharbor_column.nc \
+      ../build_example.sh

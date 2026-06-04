@@ -125,6 +125,11 @@ cd ${CASE_DIR}
 # make sure there is a clean endline -- an extra doesn't hurt
 echo "" >> user_nl_elm
 
+# override surfdata if specified
+if [ -n "${SURF_DATA_FILE}" ]; then
+    echo " fsurdat = '\${DIN_LOC_ROOT}/lnd/clm2/surfdata_map/${SURF_DATA_FILE}'" >> user_nl_elm
+fi
+
 # ATS-specific
 if [ "${USE_ATS}" != "FALSE" ]; then
     ${SED} -i "s^MESH_FILENAME^${CASE_DIR}/${DOMAIN_NAME}^g" ${ATS_CASE_NAME}.xml
@@ -169,7 +174,7 @@ fi
 ./xmlchange LND_DOMAIN_FILE=${DOMAIN_FILE}
 
 # set the number of tasks
-if [ ! -v NTASKS ]; then
+if [ -z "${NTASKS}" ]; then
     NTASKS=1
 fi
 ./xmlchange NTASKS=${NTASKS}

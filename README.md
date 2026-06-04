@@ -1,3 +1,42 @@
+# Assumptions
+
+This repo is a meta-repo which stores submodules to all the software
+stacks needed to run coupled ELM+ATS simulations.  It is important for
+users to understand the assumptions that go into ELM+ATS.
+
+
+## ELM assumptions
+
+* Only natural / vegetated land surface types are allowed
+* One land type per grid cell, one topo unit per land type, one water column per topo unit -- the heirarchy is collapsed through water columns.
+* Currently one PFT with area fraction 1, all others 0 per water column.  This could eventually be relaxed.
+
+## ATS assumptions
+
+* Meshes are extruded with a uniform number of grid cells.
+* Meshes are pre-partitioned and written with 'one block' option of Watershed Workflow.
+
+## Shared assumptions
+
+* ELM's surfdata and domain files are organized in the same ordering
+  as ATS's columns.  This is satisfied if the above ATS assumptions
+  are met (using WW with pre-partitioning and 'one block').
+* ATS's mesh is the same vertical structure as ELM's mesh -- zi, dz, nlevgrnd
+
+# Who owns what -- design
+
+## ELM owns:
+
+* meteorologic data
+* all vegetation and land surface properties
+* currently (may change) porosity, sand/silt/clay
+
+## ATS owns:
+
+* domain decomposition and mesh
+* permeability and WRMs
+
+
 # Building prototype ELM-ATS:
 
 [![Build Docker Image](https://github.com/amanzi/COMPASS-ELM-ATS/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/amanzi/COMPASS-ELM-ATS/actions/workflows/docker-ci.yml)
@@ -114,6 +153,22 @@ Follow the examples:
   - `USE_ATS=IC_ONLY ./build_example.sh` Runs native ELM but with ATS's iniitial condition for easier comparison
   - `USE_ATS=TRUE ./build_example.sh` Runs ELM + ATS
 3) Follow the on-screen instructions to run the case: `cd ${CASE_DIR} && ./case.submit`
+
+# Directory Structure and Input File Workflow
+
+This repo uses multiple directories to track input files for a given `CASE_NAME`. This is convoluted and probably needs to be rethought and streamlined at some point.
+
+1. `./watershed_workflow/examples/CASE_NAME` may include scripts for Watershed Workflow used to generate input files. This is the workflow tool that sets up runs — most "real" runs will use this tool.
+
+2. Once the input data is created, it is typically moved into an `./examples/CASE_NAME` directory. This directory stages the input for E3SM and includes a `build_example.sh` script that runs E3SM/CIME's `create_newcase` and related scripts. Run-specific Watershed Workflow output from step 1 is copied into this directory (ATS xml files, ATS exo files, `user_nl` files — all non-data files).
+
+3. `./inputdata` is E3SM's repo for storing input files. Once met data, surfdata, and domain files are created in step 1, they are moved to subdirectories here.
+
+4. Once `create_newcase` is run (in the `build_example.sh` script), a `CASE_DIR` — typically something like `${CASE_ROOT}/CASE_NAME.npX` — is created. This is E3SM's staging directory for repeated runs. All files from step 2 are copied here and sometimes modified (e.g. via `sed`) to inject mesh names etc. **This is the authoritative location for ATS input XML files used in a run.**
+
+5. `create_newcase` also creates a run directory where the actual runs execute. Few or no input files live there (perhaps namelist files); it is primarily for run output.
+
+**Note:** A file `work/CASE_NAME.ats/run/CASE_NAME.xml` may exist but is **not** used — the XML in the `CASE_DIR` (step 4) is what ATS reads. Do not edit the run-directory copy.
 
 # Examples
 
