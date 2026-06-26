@@ -80,9 +80,19 @@ if [ -z "${GITHUB_ACTIONS}" ]; then
     export GITHUB_ACTIONS=FALSE
 fi
 
+# Debug mode?
+if [ -z "${DEBUG_MODE}" ]; then
+    export DEBUG_MODE=FALSE
+fi
+
 CASE_DIR="${E3SM_WORK_DIR}/cases/${CASE_NAME}.${CASE_SUFFIX}"
 E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
-SED=gsed
+# Use GNU sed if available (gsed on macOS), otherwise plain sed
+if command -v gsed &> /dev/null; then
+    SED=gsed
+else
+    SED=sed
+fi
 
 # create the case
 echo "Creating case"
@@ -125,6 +135,11 @@ cd ${CASE_DIR}
 # make sure there is a clean endline -- an extra doesn't hurt
 echo "" >> user_nl_elm
 
+# override surfdata if specified
+if [ -n "${SURF_DATA_FILE}" ]; then
+    echo " fsurdat = '\${DIN_LOC_ROOT}/lnd/clm2/surfdata_map/${SURF_DATA_FILE}'" >> user_nl_elm
+fi
+
 # ATS-specific
 if [ "${USE_ATS}" != "FALSE" ]; then
     ${SED} -i "s^MESH_FILENAME^${CASE_DIR}/${DOMAIN_NAME}^g" ${ATS_CASE_NAME}.xml
@@ -136,14 +151,12 @@ if [ "${USE_ATS}" != "FALSE" ]; then
     fi
     echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
     echo " ats_inputfile = '${ATS_CASE_NAME}.xml'" >> user_nl_elm
+    echo " domain_decomp_type = 'ats'" >> user_nl_elm
 fi
 
 
 # ELM
-if [ -z "${INPUTDATA_DIR}" ]; then
-    INPUTDATA_DIR=${E3SM_WORK_DIR}/inputdata
-fi
-./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${INPUTDATA_DIR}
+./xmlchange MOSART_MODE=NULL,DOUT_S=FALSE,DIN_LOC_ROOT=${ELM_ATS_SRC_DIR}/inputdata
 ./xmlchange DIN_LOC_ROOT_CLMFORC=\$DIN_LOC_ROOT/atm/datm7
 ./xmlchange ELM_USRDAT_NAME=${INPUTDATA_NAME}
 
@@ -156,7 +169,7 @@ if [ -z "${DOMAIN_FILE}" ]; then
         if (( ${#matches[@]} == 1 )); then
             file="${matches[0]}"
             DOMAIN_FILE="${file##*/}"
-        elif (( ${#matches[@]} == 0))
+        elif (( ${#matches[@]} == 0)); then
             echo "Cannot find domain file for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
             exit 1
         else 
@@ -172,7 +185,7 @@ fi
 ./xmlchange LND_DOMAIN_FILE=${DOMAIN_FILE}
 
 # set the number of tasks
-if [ ! -v NTASKS ]; then
+if [ -z "${NTASKS}" ]; then
     NTASKS=1
 fi
 ./xmlchange NTASKS=${NTASKS}
@@ -182,7 +195,7 @@ fi
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
-./xmlchange DEBUG=TRUE
+./xmlchange DEBUG=${DEBUG_MODE}
 
 # setup the case
 echo ""

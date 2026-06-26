@@ -23,22 +23,22 @@ def validate_surfacevars(ds):
         sys.exit(2)
 
     # test the constraints above:
-    if not (veg_lunit == 100.):
+    if np.any(veg_lunit != 100.):
         print("FAIL: PCT_NATVEG not equal to 100%", file=sys.stderr)
         fail = True
-    if (lake_lunit > 0.):
+    if np.any(lake_lunit > 0.):
         print("FAIL: PCT_LAKE > 0", file=sys.stderr)
         fail = True
-    if (all(urban_lunit) > 0.):
+    if np.any(urban_lunit > 0.):
         print("FAIL: ANY PCT_LAKE > 0", file=sys.stderr)
         fail = True
-    if (glac_lunit > 0.):
+    if np.any(glac_lunit > 0.):
         print("FAIL: PCT_GLACIER > 0", file=sys.stderr)
         fail = True
-    if (crop_lunit > 0.):
+    if np.any(crop_lunit > 0.):
         print("FAIL: PCT_CROP > 0", file=sys.stderr)
         fail = True
-    if (wetl_lunit > 0.):
+    if np.any(wetl_lunit > 0.):
         print("FAIL: PCT_WETLAND > 0", file=sys.stderr)
         fail = True
 
@@ -64,20 +64,16 @@ def validate_surfacevars(ds):
 
 def main():
     parser = argparse.ArgumentParser(description="Validate NetCDF Variables.")
-    parser.add_argument("--file_name", type=str, required = True, help = "NetCDF surface file to validate")
+    parser.add_argument("FILE_NAME", type=str, help = "NetCDF surface file to validate")
     args = parser.parse_args()
 
-    print(f"Testing dataset: {args.file_name}")
+    print(f"Testing dataset: {args.FILE_NAME}")
     try:
-        ds = xr.open_dataset(args.file_name)
+        ds = xr.load_dataset(args.FILE_NAME)
     except FileNotFoundError:
-        print(f"File not found: {args.file_name}", file=sys.stderr)
+        print(f"File not found: {args.FILE_NAME}", file=sys.stderr)
 
-    try:
-        validate_surfacevars(ds)
-    except Exception as e:
-        print(f"Unexpected error in validation: {e}", file=sys.stderr)
-        sys.exit(4)
+    validate_surfacevars(ds)
 
 if __name__ == "__main__":
     main()
