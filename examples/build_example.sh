@@ -80,6 +80,11 @@ if [ -z "${GITHUB_ACTIONS}" ]; then
     export GITHUB_ACTIONS=FALSE
 fi
 
+# Debug mode?
+if [ -z "${DEBUG_MODE}" ]; then
+    export DEBUG_MODE=FALSE
+fi
+
 CASE_DIR="${E3SM_WORK_DIR}/cases/${CASE_NAME}.${CASE_SUFFIX}"
 E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
 # Use GNU sed if available (gsed on macOS), otherwise plain sed
@@ -146,6 +151,7 @@ if [ "${USE_ATS}" != "FALSE" ]; then
     fi
     echo " ats_inputdir = '${CASE_DIR}'" >> user_nl_elm
     echo " ats_inputfile = '${ATS_CASE_NAME}.xml'" >> user_nl_elm
+    echo " domain_decomp_type = 'ats'" >> user_nl_elm
 fi
 
 
@@ -189,7 +195,7 @@ fi
 ./xmlchange RUN_STARTDATE=2000-07-15
 ./xmlchange STOP_OPTION=nyears,STOP_N=2
 ./xmlchange BATCH_SYSTEM=none
-./xmlchange DEBUG=TRUE
+./xmlchange DEBUG=${DEBUG_MODE}
 
 # setup the case
 echo ""

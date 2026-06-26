@@ -39,6 +39,8 @@ RUN_PLOTS=true
 BUILD_ONLY=false
 # New flag: automatically delete existing case/output directories
 DELETE_EXISTING=false
+# Enable debug mode
+DEBUG_MODE=false
 
 # Print help/usage information
 show_help() {
@@ -55,6 +57,7 @@ Options:
   --no-plots              Skip comparison plot generation
   --build-only            Build Docker image and exit
   --delete-existing, -d   Automatically delete any existing case and output directories
+  --debug                 Enable E3SM DEBUG mode (./xmlchange DEBUG=TRUE)
   -h, --help              Show this help message and exit
 EOF
 }
@@ -73,6 +76,7 @@ while [[ $# -gt 0 ]]; do
         --no-plots)   RUN_PLOTS=false; shift ;;
         --build-only) BUILD_ONLY=true; shift ;;
         --delete-existing|-d) DELETE_EXISTING=true; shift ;;
+        --debug)      DEBUG_MODE=true; shift ;;
         -h|--help)    show_help; exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
@@ -178,10 +182,19 @@ for SUFFIX in elm ic_only elm-ats; do
 
     echo "=== Launching ${CONTAINER_NAME} (USE_ATS=${USE_ATS_VAL}) ==="
 
+    # Convert bash boolean to E3SM TRUE/FALSE
+    if [ "${DEBUG_MODE}" = true ]; then
+        DEBUG_VAL=TRUE
+    else
+        DEBUG_VAL=FALSE
+    fi
+
     docker run --rm \
+        --ulimit nofile=65536:65536 \
         --name "${CONTAINER_NAME}" \
         -e USE_ATS="${USE_ATS_VAL}" \
         -e NTASKS="${NTASKS}" \
+        -e DEBUG_MODE="${DEBUG_VAL}" \
         -v "${OUTPUT_DIR}:${CONTAINER_WORK}" \
         "${IMAGE_NAME}" \
         bash -c "cd /home/amanzi_user/compass/examples/${EXAMPLE} && ./build_example.sh && cd ${CONTAINER_WORK}/cases/${CASE_NAME}.${SUFFIX} && ./case.submit --no-batch" \

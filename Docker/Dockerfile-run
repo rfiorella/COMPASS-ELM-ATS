@@ -59,5 +59,4 @@ ENV CIMEROOT=/home/amanzi_user/E3SM/cime \
     E3SM_WORK_DIR=/home/amanzi_user/work \
     INPUTDATA_DIR=/home/amanzi_user/compass/inputdata \
     MACHINE_NAME=docker-ats \
-    COMPILER_NAME=gnu \
-    GITHUB_ACTIONS=TRUE
+    COMPILER_NAME=gnu
