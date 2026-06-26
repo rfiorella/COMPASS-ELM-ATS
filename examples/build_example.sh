@@ -82,7 +82,12 @@ fi
 
 CASE_DIR="${E3SM_WORK_DIR}/cases/${CASE_NAME}.${CASE_SUFFIX}"
 E3SM_SRC_DIR="${ELM_ATS_SRC_DIR}/E3SM"
-SED=gsed
+# Use GNU sed if available (gsed on macOS), otherwise plain sed
+if command -v gsed &> /dev/null; then
+    SED=gsed
+else
+    SED=sed
+fi
 
 # create the case
 echo "Creating case"
@@ -158,7 +163,7 @@ if [ -z "${DOMAIN_FILE}" ]; then
         if (( ${#matches[@]} == 1 )); then
             file="${matches[0]}"
             DOMAIN_FILE="${file##*/}"
-        elif (( ${#matches[@]} == 0))
+        elif (( ${#matches[@]} == 0)); then
             echo "Cannot find domain file for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
             exit 1
         else 

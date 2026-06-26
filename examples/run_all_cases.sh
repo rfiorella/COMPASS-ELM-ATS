@@ -184,7 +184,7 @@ for SUFFIX in elm ic_only elm-ats; do
         -e NTASKS="${NTASKS}" \
         -v "${OUTPUT_DIR}:${CONTAINER_WORK}" \
         "${IMAGE_NAME}" \
-        bash -c "cd /home/amanzi_user/compass/examples/${EXAMPLE} && ./build_example.sh" \
+        bash -c "cd /home/amanzi_user/compass/examples/${EXAMPLE} && ./build_example.sh && cd ${CONTAINER_WORK}/cases/${CASE_NAME}.${SUFFIX} && ./case.submit --no-batch" \
         > "${OUTPUT_DIR}/${SUFFIX}.log" 2>&1 &
 
     PIDS[$SUFFIX]=$!
@@ -199,9 +199,18 @@ echo "=== Waiting for all cases to finish ==="
 FAILED=0
 for SUFFIX in elm ic_only elm-ats; do
     if wait "${PIDS[$SUFFIX]}"; then
-        echo "  ${SUFFIX}: SUCCESS"
+        # Verify output files exist
+        RUN_DIR="${OUTPUT_DIR}/output/${CASE_NAME}.${SUFFIX}/run"
+        if ls "${RUN_DIR}/"*.h0.*.nc 1>/dev/null 2>&1; then
+            echo "  ${SUFFIX}: SUCCESS (output verified)"
+        else
+            echo "  ${SUFFIX}: FAILED (no h0 output files in ${RUN_DIR})"
+            echo "              Check ${OUTPUT_DIR}/${SUFFIX}.log"
+            FAILED=1
+        fi
     else
-        echo "  ${SUFFIX}: FAILED (see ${OUTPUT_DIR}/${SUFFIX}.log)"
+        echo "  ${SUFFIX}: FAILED (container exit code nonzero)"
+        echo "              Check ${OUTPUT_DIR}/${SUFFIX}.log"
         FAILED=1
     fi
 done
