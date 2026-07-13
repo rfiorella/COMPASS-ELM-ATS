@@ -1,6 +1,5 @@
 <ParameterList name="Main" type="ParameterList">
   <ParameterList name="mesh" type="ParameterList">
-    <Parameter name="partitioner" type="string" value="from exodus file"/>
     <ParameterList name="surface" type="ParameterList">
       <Parameter name="mesh type" type="string" value="surface"/>
       <ParameterList name="surface parameters" type="ParameterList">
@@ -8,6 +7,7 @@
       </ParameterList>
     </ParameterList>
     <ParameterList name="domain" type="ParameterList">
+      <Parameter name="partitioner" type="string" value="from exodus file"/>
       <Parameter name="mesh type" type="string" value="read mesh file"/>
       <ParameterList name="read mesh file parameters" type="ParameterList">
         <Parameter name="file" type="string" value="elm_output_data/coweeta.exo"/>
