@@ -10,6 +10,7 @@ if [ -z "${NTASKS}" ]; then
 fi
 
 NTASKS=${NTASKS} \
+      EXAMPLE_DIR=oakharbor_transect \
       CASE_NAME=oakharbor_transect.np${NTASKS} \
       ATS_CASE_NAME=oakharbor_transect \
       INPUTDATA_NAME=5x1pt_Oakharbor \

@@ -107,7 +107,11 @@ echo ""
 echo "Setting up case input"
 echo "----------------------"
 if [ "${GITHUB_ACTIONS}" = "TRUE" ]; then
-    export CASE_SOURCE=$(find / -path "*/examples/${CASE_NAME}" 2>/dev/null)
+    # Use EXAMPLE_DIR if set, otherwise fall back to CASE_NAME
+    # This allows CASE_NAME to include suffixes like .np${NTASKS} for output
+    # while EXAMPLE_DIR identifies the actual source directory
+    SEARCH_DIR="${EXAMPLE_DIR:-${CASE_NAME}}"
+    export CASE_SOURCE=$(find / -path "*/examples/${SEARCH_DIR}" 2>/dev/null)
     export SHARED_SOURCE=$(find / -path "*/examples/shared" 2>/dev/null)
 else
     export CASE_SOURCE="./"
@@ -162,18 +166,18 @@ fi
 
 # try to find the domain.nc file: these are now example specific
 if [ -z "${DOMAIN_FILE}" ]; then
-    if [ -e ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
+    if [ -e ${INPUTDATA_DIR}/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}.nc ]; then
 	    DOMAIN_FILE=domain.lnd.${INPUTDATA_NAME}.nc
     else
-	    matches=(${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
+	    matches=(${INPUTDATA_DIR}/share/domains/domain.clm/domain.lnd.${INPUTDATA_NAME}*.nc)
         if (( ${#matches[@]} == 1 )); then
             file="${matches[0]}"
             DOMAIN_FILE="${file##*/}"
         elif (( ${#matches[@]} == 0)); then
-            echo "Cannot find domain file for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+            echo "Cannot find domain file for ${INPUTDATA_NAME} in ${INPUTDATA_DIR}/share/domains/domain.clm"
             exit 1
         else 
-            echo "Domain file ambiguous (more than one found) for ${INPUTDATA_NAME} in ${E3SM_WORK_DIR}/inputdata/share/domains/domain.clm"
+            echo "Domain file ambiguous (more than one found) for ${INPUTDATA_NAME} in ${INPUTDATA_DIR}/share/domains/domain.clm"
             exit 2
         fi        
     fi

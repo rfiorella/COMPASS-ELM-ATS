@@ -2,7 +2,9 @@
 # Starts from the base ATS image (pre-compiled ATS/Amanzi), adds CIME
 # dependencies, and copies the full source tree including E3SM and inputdata.
 
-FROM metsi/ats:elm_ats-latest
+#FROM metsi/ats:elm_ats-latest
+
+FROM metsi/ats:elm_ats-arm64-latest
 
 ARG https_proxy=
 ARG http_proxy=
