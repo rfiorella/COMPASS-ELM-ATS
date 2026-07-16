@@ -156,6 +156,7 @@ done
 # ---------------------------------------------------------------------------
 echo "=== Building Docker image ==="
 docker build --pull \
+    --no-cache \
     -f "${REPO_ROOT}/Docker/Dockerfile-run" \
     -t "${IMAGE_NAME}" \
     "${REPO_ROOT}"
